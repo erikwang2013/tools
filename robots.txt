@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 Allow: /
-Sitemap: https://postwoman.io/sitemap.xml
+Sitemap: https://postwoman.erik.xyz/sitemap.xml
