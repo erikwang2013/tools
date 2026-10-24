@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+agent/node_modules/
+
+# Nuxt build output
+.nuxt/
+dist/
+
+# Agent local config (may contain machine-specific commands/paths)
+agent/config.json
+
+# Superpowers SDD scratch
+.superpowers/
+worktrees/
+.worktrees/
+.claude/worktrees/
+
+# Test artifacts
+cypress/screenshots/
+cypress/videos/
+test-results/
+
+# Local env and logs
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
