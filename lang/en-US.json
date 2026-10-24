@@ -300,5 +300,7 @@
   "agent_offline_hint": "The local agent is not connected.",
   "start_agent_command": "Start it with",
   "connecting": "Connecting...",
-  "panel_not_implemented": "This panel is not implemented yet."
+  "panel_not_implemented": "This panel is not implemented yet.",
+  "protocols": "Protocols",
+  "protocol_lab": "Protocol Lab"
 }

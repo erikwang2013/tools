@@ -21,6 +21,14 @@
         <i class="material-icons">settings_input_hdmi</i>
       </nuxt-link>
       <nuxt-link
+        :to="localePath('protocols')"
+        :class="linkActive('/protocols')"
+        v-tooltip.right="$t('protocols')"
+        :aria-label="$t('protocols')"
+      >
+        <i class="material-icons">lan</i>
+      </nuxt-link>
+      <nuxt-link
         :to="localePath('graphql')"
         :class="linkActive('/graphql')"
         v-tooltip.right="$t('graphql')"

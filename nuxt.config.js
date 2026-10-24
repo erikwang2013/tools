@@ -82,7 +82,7 @@ const localeAlternates = locales.map(locale => ({
   hreflang: locale.iso,
   href: `${siteUrl}${locale.code === defaultLocale ? "/" : "/" + locale.code}`,
 }))
-const sitemapPages = ["", "/doc", "/graphql", "/realtime", "/settings"]
+const sitemapPages = ["", "/doc", "/graphql", "/realtime", "/settings", "/protocols"]
 const sitemapRoutes = locales
   .map(locale => {
     const prefix = locale.code === defaultLocale ? "" : `/${locale.code}`
