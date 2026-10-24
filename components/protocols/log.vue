@@ -87,7 +87,13 @@ div.log-entries {
 </style>
 
 <script>
-import { base64ToBytes, bytesToUtf8, toHexDump, utf8ToBytes } from "~/functions/bytes.mjs"
+import {
+  base64ToBytes,
+  bytesToUtf8,
+  hasUnprintable,
+  toHexDump,
+  utf8ToBytes,
+} from "~/functions/bytes.mjs"
 
 export default {
   props: {
@@ -109,7 +115,7 @@ export default {
         if (this.hexView) return { entry, display: toHexDump(bytes), binary: false }
         if (entry.encoding === "base64") {
           const text = bytesToUtf8(bytes)
-          if (text.includes("\uFFFD")) return { entry, display: toHexDump(bytes), binary: true }
+          if (hasUnprintable(text)) return { entry, display: toHexDump(bytes), binary: true }
           return { entry, display: text, binary: false }
         }
         return { entry, display: this.raw(entry), binary: false }

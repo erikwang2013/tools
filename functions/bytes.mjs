@@ -1,4 +1,5 @@
 const BASE64_RE = /^[A-Za-z0-9+/]*={0,2}$/
+const UNPRINTABLE_RE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\uFFFD]/
 const HEX_PAIRS = Array.from({ length: 256 }, (_, byte) => byte.toString(16).padStart(2, "0"))
 
 export function isHex(value) {
@@ -50,6 +51,10 @@ export function utf8ToBytes(text) {
 
 export function bytesToUtf8(bytes) {
   return new TextDecoder().decode(bytes)
+}
+
+export function hasUnprintable(text) {
+  return UNPRINTABLE_RE.test(text)
 }
 
 export function toHexDump(bytes, { width = 16, offset = true } = {}) {
