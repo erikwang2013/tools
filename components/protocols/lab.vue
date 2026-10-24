@@ -190,6 +190,7 @@ p.lab-hint {
 import { agentClient } from "~/functions/agent-client.mjs"
 import { sendHttp } from "~/functions/http-request"
 import { editorToWire } from "~/functions/payload.mjs"
+import { makeLogEntry } from "~/functions/log-entry.mjs"
 import ProtocolsLog from "./log.vue"
 import ProtocolsPayload from "./payload.vue"
 
@@ -338,13 +339,10 @@ export default {
       this.initPayload()
       this.entries = []
     },
-    push(direction, data, encoding) {
-      this.entries.push({
-        ts: Date.now(),
-        direction,
-        encoding: encoding || "utf8",
-        data,
-      })
+    push(direction, data, encoding, extra) {
+      this.entries.push(makeLogEntry({ direction, encoding, data, ...extra }))
+      // Spec §4.5: keep at most the last 2000 entries in memory.
+      if (this.entries.length > 2000) this.entries.splice(0, this.entries.length - 2000)
     },
     logError(error) {
       this.push("error", (error && error.message) || String(error))
@@ -360,7 +358,10 @@ export default {
       if (detail.sessionId !== this.sessionId) return
       const payload = detail.payload || {}
       if (detail.type === "data") {
-        this.push("received", payload.data == null ? "" : payload.data, payload.encoding)
+        this.push("received", payload.data == null ? "" : payload.data, payload.encoding, {
+          bytes: payload.bytes,
+          remote: payload.remote,
+        })
       } else if (detail.type === "log") {
         const data = payload.message || JSON.stringify(payload)
         this.push(payload.level === "error" ? "error" : "info", data)

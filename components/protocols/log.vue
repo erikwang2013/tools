@@ -22,8 +22,14 @@
         :class="'direction-' + row.entry.direction"
       >
         <span class="log-meta">@ {{ formatTime(row.entry.ts) }} {{ row.entry.direction }}</span>
+        <span v-if="row.entry.remote" class="log-remote"
+          >{{ $t("from") }} {{ row.entry.remote }}</span
+        >
         <span v-if="row.binary" class="log-binary">{{ $t("binary") }}</span>
         <span class="log-data">{{ row.display }}</span>
+        <span v-if="row.entry.truncated" class="log-truncated">
+          … {{ row.entry.bytes }} {{ $t("bytes") }}
+        </span>
       </div>
     </div>
   </div>
@@ -80,7 +86,13 @@ div.log-entries {
   color: #ff5555;
 }
 
-.log-binary {
+.log-remote {
+  margin-right: 8px;
+  color: var(--fg-light-color);
+}
+
+.log-binary,
+.log-truncated {
   display: block;
   color: var(--fg-light-color);
 }
