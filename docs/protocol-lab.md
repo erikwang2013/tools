@@ -7,24 +7,31 @@ protocol-specific code.
 
 **Phase 0 scope: TCP and UDP over the Local Agent.** Other groups in the registry (HTTP, Browser
 Realtime, RPC & Messaging, IoT / Industrial) are added in later phases. Each protocol runs through
-the local, loopback-only agent described in [agent/README.md](../agent/README.md); nothing is proxied
-by the website.
+the local agent described in [agent/README.md](../agent/README.md), whose control plane is
+loopback-only; nothing is proxied by the website.
 
 ## Protocols
 
 | Protocol | id | Group | Transport | Config fields | Payload modes | Actions |
 | --- | --- | --- | --- | --- | --- | --- |
-| TCP | `tcp` | Raw & Streaming | Agent | `host`, `port`, `encoding` | hex, base64, file | Connect, Send, Close |
+| TCP | `tcp` | Raw & Streaming | Agent | `host`, `port`, `encoding`, `framing` | hex, base64, file | Connect, Send, Close |
 | UDP | `udp` | Raw & Streaming | Agent | `host`, `port`, `bindPort`, `encoding` | hex, base64, file | Connect, Send, Close |
 
 Both are raw-socket workbenches:
 
 - TCP is a byte stream: one Send writes one chunk, and the peer's bytes may arrive as one `data`
-  entry or several depending on how the network and peer segment them. No framing, newline handling
-  or protocol parsing is applied.
+  entry or several depending on how the network and peer segment them. With `framing: none` (the
+  default) no newline handling or protocol parsing is applied. With `framing: line` the agent buffers
+  inbound chunks, strips a trailing `\r`, and emits one `data` entry per complete `\n`-terminated
+  line; on close, a non-empty remainder is emitted as the final line.
 - UDP is datagram-based: one Send is one datagram, and each received datagram is one `data` entry.
-  The agent's reply payload also carries the sender as `remote: "<ip>:<port>"`; the Phase 0 log view
-  displays the payload bytes only.
+  The agent's reply payload also carries the sender as `remote: "<ip>:<port>"`, which the lab log
+  shows after the direction (`from <ip>:<port>`).
+
+The agent's control plane (HTTP/WebSocket) binds `127.0.0.1` only. A UDP session's data socket binds
+`127.0.0.1` when the target is loopback (`localhost`, `::1` or an address in `127.0.0.0/8`); for any
+other target it binds the wildcard address (`0.0.0.0`), because a loopback-bound socket cannot receive
+replies from a LAN device.
 
 ## Fields
 
@@ -34,6 +41,7 @@ Both are raw-socket workbenches:
 | `port` | TCP, UDP | number | `9000` | Target port, integer 1–65535. Required. |
 | `bindPort` | UDP | number | `0` | Local UDP port the agent binds before sending, integer 0–65535. `0` lets the OS choose an ephemeral port, which is what request/response tests need. Set a fixed port only when the peer must send to a known local port. |
 | `encoding` | TCP, UDP | select | `base64` | How received bytes are decoded for display: `base64` or `utf8`. See below. |
+| `framing` | TCP | select | `none` | `none` delivers raw chunks; `line` delivers one `data` entry per `\n`-terminated line (a trailing `\r` is stripped, and a non-empty remainder is emitted on close). |
 
 Invalid field values are rejected by the agent when the session opens: the lab log shows the error
 message and the session is closed. The buttons reflect that state (Connect is available when the
@@ -79,7 +87,7 @@ protocols in later phases; they are not used by TCP or UDP.
 
 ## Agent lifecycle
 
-1. **Start.** `npm --prefix agent install` once, then `npm run agent`. The agent binds
+1. **Start.** `npm --prefix agent install` once, then `npm run agent`. The agent's control plane binds
    `127.0.0.1:3567` by default and prints the WebSocket URL, a random token and the allowed origins.
    Use `--port`, `--token`, `--origin`, `--config` or `--host` to override (the host must stay
    `127.0.0.1`).
@@ -170,8 +178,9 @@ check.
 - **Safari** is not a supported target for the agent protocols. The TCP/UDP lab may be unavailable
   or blocked there; the HTTP-based tabs are unaffected.
 
-The agent only listens on `127.0.0.1`, requires the per-start token and an exact-match Origin, and
-never accepts file paths or commands from the page. Phase 0 ships no MCP protocol or UI selector.
-The agent already reads MCP stdio server definitions from `agent/config.json` (git-ignored; copy
+The agent's control plane only listens on `127.0.0.1`, requires the per-start token and an
+exact-match Origin, and never accepts file paths or commands from the page. The only exception to the
+loopback bind is the UDP data socket for a non-loopback target, described above. Phase 0 ships no MCP
+protocol or UI selector. The agent already reads MCP stdio server definitions from `agent/config.json` (git-ignored; copy
 `agent/config.example.json`); when MCP support lands, those servers will only be startable from that
 file, and the page will not be able to add or modify entries.

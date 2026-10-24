@@ -1,11 +1,13 @@
 # Postwoman Agent
 
 Local WebSocket agent that gives the Postwoman web app access to raw TCP and UDP sockets.
-It binds to `127.0.0.1` only; it cannot be reached from other machines.
+Its control plane binds to `127.0.0.1` only, so it cannot be reached from other machines. A UDP
+session's data socket binds `127.0.0.1` for loopback targets and the wildcard address (`0.0.0.0`)
+for LAN targets, because a loopback-bound UDP socket cannot receive replies from a LAN device.
 
 ## Start
 
-From the repository root:
+The agent requires Node 18 (`>=18 <19`). From the repository root:
 
 ```bash
 npm --prefix agent install
@@ -38,9 +40,10 @@ If the port is taken (for example, an earlier agent is still running), the agent
 
 ## Token
 
-The token is printed at startup and is required for every WebSocket connection; connections
-with a wrong token are closed immediately. Without `--token` a new random token is generated
-each start, so paste the printed token into the app's agent settings after every restart.
+The token is printed at startup and is required for every WebSocket connection. The Origin is
+checked first, at the WebSocket upgrade; the token is checked on the first frame after the upgrade,
+and a wrong token gets `auth:fail` and close code 4001. Without `--token` a new random token is
+generated each start, so paste the printed token into the app's agent settings after every restart.
 Keep the token private: anyone on this machine who has it can open sockets through the agent.
 
 ## Origins
@@ -53,23 +56,29 @@ port), and duplicates are ignored.
 
 ## Browser support
 
-The page runs on HTTPS and connects to the loopback agent, so Chrome and Edge show a
-**Local network access** permission prompt the first time. Choose **Allow**; if the prompt
-was dismissed or denied, re-enable the permission in the site settings (Permissions →
-Local network access) and reload the page.
+When the page is served from a non-loopback origin (for example the deployed HTTPS site), Chrome and
+Edge gate the connection to the loopback agent with a **Local network access** permission prompt
+the first time. Choose **Allow**; if the prompt was dismissed or denied, re-enable the permission in
+the site settings (Chrome 145+ files it under **Apps on device → Local Network**) and reload the
+page. A page served from `localhost` or `127.0.0.1` is itself loopback and is normally exempt from
+the prompt.
 
-Safari does not support Local Network Access, so the TCP/UDP lab is unavailable there.
-Use Chrome or Edge.
+Firefox is best-effort and version-dependent. Safari is not a supported target for the agent
+protocols: the TCP/UDP lab may be unavailable or blocked there, while the HTTP-based tabs are
+unaffected. Use Chrome or Edge.
 
 ## Security boundary
 
-- Listens on `127.0.0.1` only; `--host` refuses anything else.
-- Token authentication plus an exact-match Origin allowlist on every WebSocket upgrade.
+- The control plane listens on `127.0.0.1` only; `--host` refuses anything else. The UDP data
+  socket exception for LAN targets is described above.
+- Every WebSocket upgrade must come from an exact-match Origin in the allowlist; after the upgrade,
+  the first frame must carry the printed token, or the agent replies `auth:fail` and closes with
+  code 4001.
 - Only `/agent` (WebSocket) and `/health` (HTTP) are served; missing or bad Origins are
   rejected before the upgrade.
-- The page never sends file paths or commands to the agent. MCP stdio servers can only be
-  started when they are listed in `agent/config.json`, which the page can select from but
-  not modify.
+- The page never sends file paths or commands to the agent. Phase 0 ships no MCP protocol or UI
+  selector; when MCP support lands, stdio servers listed in `agent/config.json` will only be
+  startable from that file, and the page will not be able to add or modify entries.
 
 ## MCP server config
 
@@ -77,7 +86,8 @@ Use Chrome or Edge.
 machine-specific commands stay out of git). Copy `config.example.json` to `config.json`,
 list your MCP stdio servers under `mcpServers`, and start with `npm run agent`. Use
 `--config <file>` to load a different file instead; when neither exists, no MCP servers
-are configured. A present but unreadable file is a startup error naming the file.
+are configured. A present but unreadable file is a startup error naming the file. Phase 0 has no
+MCP protocol or UI selector; the file is read today so Phase 1 can start those servers.
 
 ```json
 {

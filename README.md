@@ -278,7 +278,7 @@ Open **Settings → Local Agent**, keep the default URL, paste the printed token
 
 **Security boundary.**
 
-- The agent binds `127.0.0.1` only; `--host` refuses anything else.
+- The agent's control plane (HTTP/WebSocket) binds `127.0.0.1` only; `--host` refuses anything else. A UDP session's data socket binds `127.0.0.1` for loopback targets and the wildcard address (`0.0.0.0`) for LAN targets, which is required to receive their replies.
 - Every WebSocket upgrade must come from an exact-match Origin in the allowlist (`https://postwoman.erik.xyz`, `http://localhost:3000`, `http://127.0.0.1:3000`; add more with `--origin`). After the upgrade, the first frame must carry the printed token, or the agent replies `auth:fail` and closes with code 4001.
 - The page never sends file paths or commands to the agent.
 - Phase 0 has no MCP protocol or UI. The agent already reads MCP stdio server definitions from `agent/config.json` (git-ignored; copy `agent/config.example.json`); when MCP support lands, those servers will only be startable from that file, and the page will not be able to add or modify entries.
