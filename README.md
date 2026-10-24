@@ -257,7 +257,7 @@ TCP and UDP cannot be opened by a web page directly, so the lab sends them throu
 
 A small WebSocket agent that gives the Protocol Lab raw TCP/UDP sockets. It listens on loopback only and authenticates each connection with a token.
 
-**Node 16–18 is required** (the repo pins 18 in `.nvmrc`; Nuxt 2.12 aborts on Node 22). The agent itself requires Node 18.
+**This fork needs Node 16–18** for Nuxt 2.12 (Node 20+ fails in its `esm` loader), while the **agent package requires Node 18** (`>=18 <19`). Use Node 18 for both: the repo's `.nvmrc` pins 18, so `nvm use 18` covers the app and the agent.
 
 ```bash
 npm --prefix agent install   # the agent has its own dependencies (ws)
@@ -274,14 +274,14 @@ Allowed origins: https://postwoman.erik.xyz, http://localhost:3000, http://127.0
 
 Open **Settings → Local Agent**, keep the default URL, paste the printed token and click **Connect**. The token is regenerated on every start unless you pass `--token`, so paste the new one after each restart. Options (`--port`, `--origin`, `--token`, `--config`) are documented in [agent/README.md](agent/README.md).
 
-**Browser permission.** The page is served over HTTPS and the agent is on loopback, so Chrome and Edge ask for **Local network access** the first time. Choose Allow; if the prompt was dismissed, re-enable it under site settings → Permissions → Local network access and reload. Firefox is best-effort and not a supported target; Safari does not support Local Network Access, so the TCP/UDP lab is unavailable there.
+**Browser permission.** When the app is served from a non-loopback origin (for example the deployed HTTPS site), Chrome and Edge gate the loopback connection with a **Local Network Access** permission. Choose Allow; if it was dismissed, re-enable it in site settings (Chrome 145+ files it under **Apps on device → Local Network**) and reload. A page served from `localhost`/`127.0.0.1` is itself loopback and is normally exempt from the prompt. Firefox is best-effort and version-dependent; Safari is not a supported target for the agent protocols.
 
 **Security boundary.**
 
 - The agent binds `127.0.0.1` only; `--host` refuses anything else.
-- Every WebSocket upgrade needs the printed token and an exact-match Origin from the allowlist (`https://postwoman.erik.xyz`, `http://localhost:3000`, `http://127.0.0.1:3000`; add more with `--origin`).
+- Every WebSocket upgrade must come from an exact-match Origin in the allowlist (`https://postwoman.erik.xyz`, `http://localhost:3000`, `http://127.0.0.1:3000`; add more with `--origin`). After the upgrade, the first frame must carry the printed token, or the agent replies `auth:fail` and closes with code 4001.
 - The page never sends file paths or commands to the agent.
-- MCP stdio servers can only be started from entries in `agent/config.json` (git-ignored; copy `agent/config.example.json`); the page can select those entries but cannot add or modify them.
+- Phase 0 has no MCP protocol or UI. The agent already reads MCP stdio server definitions from `agent/config.json` (git-ignored; copy `agent/config.example.json`); when MCP support lands, those servers will only be startable from that file, and the page will not be able to add or modify entries.
 
 ## Built with 🔧
 

@@ -61,9 +61,21 @@ TCP and UDP descriptors use the `binary` payload mode, so the editor offers:
 | Base64 | Base64 text | `base64` | Validated before sending. |
 | File | A file chosen with the file picker | `base64` | Read into memory and sent as one payload; the page sends file contents, never a path. |
 
-All payloads are capped at 16 MiB (`MAX_PAYLOAD_BYTES`), both in the editor and in the agent's
-message envelope. Switching between Hex and Base64 converts the current payload when it is valid.
-Text/JSON/XML payload modes exist for text protocols in later phases; they are not used by TCP or UDP.
+Two separate 16 MiB caps apply:
+
+- **Editor payload cap** — the editor refuses a decoded payload larger than 16 MiB
+  (`MAX_PAYLOAD_BYTES`).
+- **Agent message/frame cap** — the agent caps each WebSocket frame and the whole JSON message at
+  16 MiB (`MAX_MESSAGE_BYTES`, also passed to `ws` as `maxPayload`).
+
+Binary payloads travel base64-encoded inside JSON, which adds about 4/3 inflation plus the JSON
+envelope. A full 16 MiB binary payload therefore becomes ~21.3 MiB on the wire and is rejected by
+the agent's frame cap (`ws` closes the connection because the frame exceeds `maxPayload`). The
+effective maximum binary payload through the agent is about 12 MiB (16 MiB × 3/4, less envelope
+overhead). The same frame cap applies to received `data` frames: an inbound base64 chunk over
+roughly 12 MiB cannot be delivered and is replaced by an error entry. Switching between Hex and
+Base64 converts the current payload when it is valid. Text/JSON/XML payload modes exist for text
+protocols in later phases; they are not used by TCP or UDP.
 
 ## Agent lifecycle
 
@@ -92,9 +104,10 @@ Text/JSON/XML payload modes exist for text protocols in later phases; they are n
 
 ## Manual verification checklist
 
-Run every command with Node 16–18 (`PATH=/home/erik/.local/node18/bin:$PATH` on this machine, or
-`nvm use` with the repo's `.nvmrc`). The dev server on port 3000 is already in the agent's Origin
-allowlist.
+Run every command with Node 18 (`nvm use 18`; the repo's `.nvmrc` pins 18). Nuxt 2.12 supports
+Node 16–18, while the agent package requires Node 18 (`>=18 <19`). The dev server on port 3000 is
+already in the agent's Origin allowlist. (On this development machine the toolchain also lives at
+`/home/erik/.local/node18/bin`; that absolute path is local to this host.)
 
 1. **Start the app.** From the repository root: `npm run dev`, then open
    `http://localhost:3000/protocols`.
@@ -102,45 +115,63 @@ allowlist.
    `npm run agent`. Record the printed token and confirm it says
    `ws://127.0.0.1:3567/agent`. `curl http://127.0.0.1:3567/health` returns `{"ok":true}`.
 3. **Connect from Settings.** Go to Settings → Local Agent, keep the default URL, paste the token and
-   click Connect. The status changes to Connected. In Chrome or Edge the first attempt triggers the
-   **Local network access** prompt; choose Allow. To confirm the permission failure path, repeat with
-   a wrong token: the status shows an error and the agent rejects the connection (4001).
-4. **TCP echo.** In a third terminal:
+   click Connect. The status changes to Connected. This page is served from `localhost` (loopback),
+   so it is in the same address space as the agent and Chrome/Edge do not show a Local Network
+   Access prompt for this run; LNA is exercised separately in step 8.
+4. **Auth failure.** Disconnect, then connect with a wrong token: the status shows an error (toast
+   `invalid token`) and the agent closes the connection with code 4001. Reconnect with the printed
+   token.
+5. **TCP echo.** In a third terminal:
    `node -e "require('net').createServer(s => s.pipe(s)).listen(9000)"`.
    If port 9000 is already in use, choose a free port and use it consistently below. In the lab
    choose TCP, leave host `127.0.0.1` and port `9000`, keep Receive as `base64`, click Connect,
    enter the hex payload `68656c6c6f`, click Send. The log shows the sent entry and a received
    `hello` (or a hexdump in Hex view).
-5. **UDP echo.** In a fourth terminal:
+6. **UDP echo.** In a fourth terminal:
    `node -e "const d=require('dgram').createSocket('udp4');d.on('message',(m,r)=>d.send(m,r.port,r.address));d.bind(9001)"`.
-   Choose UDP, set port `9001` and bind port `0`, click Connect, send `68656c6c6f`; the datagram is
-   echoed back and logged.
-6. **Rejected Origin.** From a shell, an upgrade request with an unlisted Origin is refused before
+   If port 9001 is already in use, choose a free port and use it consistently below. Choose UDP,
+   set port `9001` and bind port `0`, click Connect, send `68656c6c6f`; the datagram is echoed back
+   and logged.
+7. **Rejected Origin.** From a shell, an upgrade request with an unlisted Origin is refused before
    the WebSocket handshake:
    `curl -i -H "Connection: Upgrade" -H "Upgrade: websocket" -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==" -H "Origin: http://evil.example" http://127.0.0.1:3567/agent`
    responds `HTTP/1.1 403 Forbidden`.
-7. **Close and confirm no leftovers.** Click Close in the lab, or close the page. With the agent
+8. **Local Network Access (non-loopback page).** LNA prompts only when the page origin is not
+   loopback. Use a non-loopback origin, for example the deployed `https://postwoman.erik.xyz`
+   (already in the default allowlist), or serve the app from another origin and add it with
+   `--origin <origin>`. On the first connect Chrome/Edge asks for Local Network Access (Chrome 145+
+   files it in site settings under **Apps on device → Local Network**); choosing Allow connects. If
+   the prompt is dismissed or denied, the WebSocket fails with a generic connection error; re-enable
+   the permission in site settings, reload the page and connect again. A localhost-only run has no
+   prompt to test.
+9. **Close and confirm no leftovers.** Click Close in the lab, or close the page. With the agent
    still running, `ss -tanp | grep :9000` and `ss -uanp | grep :9001` (substitute your chosen ports)
    should list only the echo server processes, with no agent-owned sockets. The agent terminal keeps
    serving other sessions. Ctrl+C stops the agent (exit 0); restarting it requires pasting the new
    token in Settings.
-8. **Existing features.** REST, GraphQL, WebSocket, SSE, Socket.IO and MQTT tabs behave as before;
-   the Protocol Lab and Settings changes do not touch their code paths.
+10. **Existing features.** REST, GraphQL, WebSocket, SSE, Socket.IO and MQTT tabs behave as before;
+    the Protocol Lab and Settings changes do not touch their code paths.
 
 ## Browser support caveat (LNA / Safari)
 
-The app is served over HTTPS while the agent is on loopback, so browsers gate the connection with
-**Local Network Access** (LNA) rules:
+Browsers may gate a page's request to the loopback agent with **Local Network Access** (LNA). The
+permission applies when the requesting page origin is not itself loopback: a page served from
+`localhost` or `127.0.0.1` is in the same address space as the agent and is normally exempt, while a
+non-loopback page origin (for example the deployed `https://postwoman.erik.xyz`) can trigger the
+check.
 
-- **Chrome / Edge** show a Local Network Access permission prompt on the first connection. Choose
-  Allow. If the prompt was dismissed or denied, the WebSocket fails with a generic connection error;
-  re-enable the permission under site settings → Permissions → Local network access and reload the
-  page.
-- **Firefox** does not implement the same LNA prompt; connections are best-effort and behaviour
-  varies by version. Chrome or Edge is the supported path.
-- **Safari** does not support Local Network Access for web pages, so the agent connection cannot be
-  used there. TCP and UDP are unavailable in Safari; the HTTP-based tabs are unaffected.
+- **Chrome / Edge** ask for Local Network Access on the first connection from a non-loopback origin.
+  Choose Allow. Chrome 145+ files the setting under site settings as **Apps on device → Local
+  Network** (older versions: Permissions → Local network access). If the prompt was dismissed or
+  denied, the WebSocket fails with a generic connection error; re-enable the permission, reload the
+  page and connect again.
+- **Firefox** is best-effort: Firefox has been rolling out Local Network Access, and behaviour
+  depends on the version. Use Chrome or Edge for the supported path.
+- **Safari** is not a supported target for the agent protocols. The TCP/UDP lab may be unavailable
+  or blocked there; the HTTP-based tabs are unaffected.
 
 The agent only listens on `127.0.0.1`, requires the per-start token and an exact-match Origin, and
-never accepts file paths or commands from the page. MCP stdio servers can only be started from
-entries in `agent/config.json`, which the page can select but not modify.
+never accepts file paths or commands from the page. Phase 0 ships no MCP protocol or UI selector.
+The agent already reads MCP stdio server definitions from `agent/config.json` (git-ignored; copy
+`agent/config.example.json`); when MCP support lands, those servers will only be startable from that
+file, and the page will not be able to add or modify entries.
