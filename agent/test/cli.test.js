@@ -90,6 +90,17 @@ test("rejects a host other than 127.0.0.1", async () => {
   }
 })
 
+test("rejects an empty token", async () => {
+  const run = runCli(["--port", "0", "--token", "", "--config", EMPTY_CONFIG])
+  try {
+    const { code } = await exitWithin(run)
+    assert.equal(code, 1)
+    assert.match(run.out.stderr, /token/i)
+  } finally {
+    run.child.kill("SIGKILL")
+  }
+})
+
 test("exits 1 when an explicit config file cannot be read", async () => {
   const run = runCli(["--port", "0", "--config", path.join(__dirname, "missing-config.json")])
   try {

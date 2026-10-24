@@ -50,7 +50,7 @@ class SessionManager {
         record.done = true
         this.release(id, record)
         this.emit(id, { type: "error", payload: { message: err.message } })
-        this.emit(id, { type: "closed", payload: {} })
+        this.emit(id, { type: "closed", payload: { reason: err.message } })
       }
       throw err
     }
@@ -68,7 +68,8 @@ class SessionManager {
     record.done = true
     this.release(id, record)
     if (record.adapter) closeQuietly(record.adapter)
-    if (!record.adapterClosed) this.emit(id, { type: "closed", payload: {} })
+    if (!record.adapterClosed)
+      this.emit(id, { type: "closed", payload: { reason: "closed by client" } })
     return true
   }
 
@@ -97,7 +98,7 @@ class SessionManager {
       this.release(id, record)
     }
     this.emit(id, { type: "error", payload: { message } })
-    this.emit(id, { type: "closed", payload: {} })
+    this.emit(id, { type: "closed", payload: { reason: message } })
     throw new Error(message)
   }
 }

@@ -22,8 +22,10 @@ function parseArgs(argv) {
     if (flag === "--port") args.port = Number(value)
     else if (flag === "--host") args.host = value
     else if (flag === "--origin") args.origins.push(value)
-    else if (flag === "--token") args.token = value
-    else args.configPath = value
+    else if (flag === "--token") {
+      if (value.trim() === "") fail("--token must not be empty.")
+      args.token = value
+    } else args.configPath = value
   }
   return args
 }

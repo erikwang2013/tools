@@ -55,7 +55,10 @@ export class AgentClient extends EventTarget {
           this._settleAuth(error)
         }
       }
-      ws.onmessage = event => this._handleMessage(event.data)
+      ws.onmessage = event => {
+        if (this._ws !== ws) return // frames from a superseded socket
+        this._handleMessage(event.data)
+      }
       ws.onerror = () => this._drop(ws, new Error("agent connection error"))
       ws.onclose = () => this._drop(ws, new Error("agent connection closed"))
     })
@@ -79,6 +82,10 @@ export class AgentClient extends EventTarget {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this._pending.delete(id)
+        // Tell the agent to release the slot if its `ready` lost the race with this timer.
+        try {
+          this._send({ v: 1, type: "close", id })
+        } catch {}
         reject(new Error(`session open timed out: ${id}`))
       }, this._timeoutMs)
       this._pending.set(id, { resolve, reject, timer })

@@ -20,3 +20,24 @@ test("connects, echoes data and emits base64 payloads", async () => {
   assert.equal(events.at(-1).type, "closed")
   await new Promise(r => server.close(r))
 })
+
+test("line framing emits complete lines and the final remainder", async () => {
+  const server = net.createServer(socket => {
+    socket.write("a\nb")
+    setTimeout(() => socket.write("\nc"), 20)
+    setTimeout(() => socket.end(), 40)
+  })
+  await new Promise(r => server.listen(0, "127.0.0.1", r))
+  const events = []
+  const session = await tcp.create(
+    { host: "127.0.0.1", port: server.address().port, encoding: "utf8", framing: "line" },
+    e => events.push(e)
+  )
+  await new Promise(r => setTimeout(r, 150))
+  assert.deepEqual(
+    events.filter(e => e.type === "data").map(e => e.payload.data),
+    ["a", "b", "c"]
+  )
+  assert.equal(events.at(-1).type, "closed")
+  await new Promise(r => server.close(r))
+})

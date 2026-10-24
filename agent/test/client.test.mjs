@@ -49,6 +49,31 @@ test("connects, opens, sends and receives", async () => {
   await srv.close()
 })
 
+test("times out an open and asks the agent to close the session", async () => {
+  let socket
+  class FakeWebSocket {
+    constructor() {
+      socket = this
+      this.sent = []
+      setTimeout(() => {
+        this.onopen()
+        this.onmessage({ data: JSON.stringify({ type: "auth:ok" }) })
+      }, 0)
+    }
+    send(raw) {
+      this.sent.push(JSON.parse(raw))
+    }
+    close() {}
+  }
+  const client = new AgentClient({ WebSocketImpl: FakeWebSocket, timeoutMs: 20 })
+  await client.connect("ws://fake", "t")
+  await assert.rejects(() => client.open("tcp", {}), /timed out/i)
+  const open = socket.sent.find(m => m.type === "open")
+  const close = socket.sent.find(m => m.type === "close")
+  assert.equal(close.id, open.id)
+  client.disconnect()
+})
+
 test("rejects a wrong token", async () => {
   const srv = await createAgentServer({
     port: 0,

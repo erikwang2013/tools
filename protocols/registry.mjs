@@ -23,6 +23,13 @@ export const protocols = [
         options: ["base64", "utf8"],
         default: "base64",
       },
+      {
+        key: "framing",
+        label: "Framing",
+        type: "select",
+        options: ["none", "line"],
+        default: "none",
+      },
     ],
     payload: "binary",
     actions: ["connect", "send", "close"],

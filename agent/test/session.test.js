@@ -30,6 +30,10 @@ test("opens, sends, closes and emits with session id", async () => {
   assert.equal(events[0][0], "s1")
   mgr.close("s1")
   assert.equal(calls.closed, 1)
+  assert.deepEqual(events.at(-1), [
+    "s1",
+    { type: "closed", payload: { reason: "closed by client" } },
+  ])
   mgr.close("s1")
   assert.equal(calls.closed, 1, "close must be idempotent")
 })
@@ -44,16 +48,23 @@ test("rejects unknown protocol and enforces max sessions", async () => {
 
 test("times out a hanging open", async () => {
   const adapter = { id: "hang", create: () => new Promise(() => {}) }
-  const mgr = new SessionManager({ adapters: { hang: adapter }, emit: () => {}, openTimeoutMs: 10 })
+  const events = []
+  const mgr = new SessionManager({
+    adapters: { hang: adapter },
+    emit: (id, e) => events.push(e),
+    openTimeoutMs: 10,
+  })
   await assert.rejects(() => mgr.open("a", "hang", {}), /timed out/i)
+  assert.match(events.at(-1).payload.reason, /timed out/i)
 })
 
 test("emits error then closed when the adapter fails to start", async () => {
   const events = []
   const adapter = { id: "boom", create: async () => { throw new Error("boom") } }
-  const mgr = new SessionManager({ adapters: { boom: adapter }, emit: (id, e) => events.push(e.type) })
+  const mgr = new SessionManager({ adapters: { boom: adapter }, emit: (id, e) => events.push(e) })
   await assert.rejects(() => mgr.open("a", "boom", {}), /boom/)
-  assert.deepEqual(events, ["error", "closed"])
+  assert.deepEqual(events.map(e => e.type), ["error", "closed"])
+  assert.equal(events.at(-1).payload.reason, "boom")
   await assert.rejects(() => mgr.send("a", {}), /unknown session/i)
 })
 

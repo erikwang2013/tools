@@ -3,6 +3,15 @@ const { toBuffer, fromBuffer } = require("../lib/payload")
 
 const ENCODINGS = new Set(["utf8", "base64"])
 
+// A loopback-bound UDP socket cannot receive replies from a LAN target, so only
+// loopback targets get a loopback bind; everything else uses the wildcard address.
+function bindAddress(host) {
+  const name = host.trim().toLowerCase()
+  if (name === "localhost" || name === "::1" || name === "[::1]") return "127.0.0.1"
+  const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(name)
+  return ipv4 && ipv4[1] === "127" ? "127.0.0.1" : "0.0.0.0"
+}
+
 module.exports = {
   id: "udp",
   create(config, emit) {
@@ -49,9 +58,11 @@ module.exports = {
         if (opened) emit({ type: "closed", payload: { reason: "socket closed" } })
       })
 
-      socket.bind(bindPort, () => {
+      socket.bind(bindPort, bindAddress(config.host), () => {
         opened = true
+        const { address, port: localPort } = socket.address()
         resolve({
+          ready: { address, port: localPort },
           send(payload) {
             if (closed) throw new Error("socket closed")
             socket.send(toBuffer(payload), port, config.host)

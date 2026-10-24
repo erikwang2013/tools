@@ -50,6 +50,10 @@ test("serves health without auth", async () => {
   await srv.close()
 })
 
+test("rejects an explicitly empty token", () => {
+  assert.throws(() => createAgentServer({ port: 0, token: "  " }), /token/i)
+})
+
 test("rejects a wrong token and accepts the right one", async () => {
   const srv = await start()
   const bad = new WebSocket(`ws://127.0.0.1:${srv.port}/agent`)
