@@ -29,7 +29,7 @@ function refuse(socket, status) {
 }
 
 function createAgentServer({
-  port = 0,
+  port = 3567,
   host = "127.0.0.1",
   token = crypto.randomBytes(24).toString("hex"),
   origins = DEFAULT_ORIGINS,
@@ -77,12 +77,16 @@ function createAgentServer({
     ws.send(raw)
   }
 
-  function sendFailure(ws, id, error) {
+  function sendFailure(ws, id, message) {
     if (typeof id === "string" && id !== "" && ws.readyState === WebSocket.OPEN) {
-      ws.send(encode({ v: 1, type: "error", id, error }))
-    } else {
-      ws.close(4002)
+      const raw = encode({ v: 1, type: "error", id, payload: { message } })
+      // The id is client-controlled, so the fallback frame needs the same cap.
+      if (Buffer.byteLength(raw) <= MAX_MESSAGE_BYTES) {
+        ws.send(raw)
+        return
+      }
     }
+    ws.close(4002)
   }
 
   function handleMessage(ws, state, raw) {
@@ -90,8 +94,12 @@ function createAgentServer({
     try {
       message = decode(raw)
     } catch (err) {
+      if (!state.authed) {
+        ws.close(4002)
+        return
+      }
       const id = recoverId(raw)
-      if (id) send(ws, { v: 1, type: "error", id, error: err.message })
+      if (id) send(ws, { v: 1, type: "error", id, payload: { message: err.message, code: err.code } })
       else ws.close(4002)
       return
     }
@@ -109,7 +117,7 @@ function createAgentServer({
       ws.close(4002)
       return
     }
-    send(ws, { v: 1, type: "error", id: message.id, error: `unsupported type: ${message.type}` })
+    send(ws, { v: 1, type: "error", id: message.id, payload: { message: `unsupported type: ${message.type}` } })
   }
 
   let pingTimer

@@ -26,6 +26,7 @@ test("rejects a wrong token and accepts the right one", async () => {
     bad.on("error", reject)
   })
   assert.equal(badReply.type, "auth:fail")
+  assert.equal(badReply.error, "invalid token")
 
   const good = new WebSocket(`ws://127.0.0.1:${srv.port}/agent`)
   const ok = await new Promise((resolve, reject) => {
@@ -62,8 +63,25 @@ test("returns an error for unhandled messages, closes malformed frames", async (
   const reply = JSON.parse((await once(authed, "message"))[0])
   assert.equal(reply.type, "error")
   assert.equal(reply.id, "s1")
+  assert.equal(typeof reply.payload.message, "string")
+  assert.equal(reply.error, undefined)
+  authed.send(JSON.stringify({ v: 2, id: "x2" }))
+  const decodeErr = JSON.parse((await once(authed, "message"))[0])
+  assert.equal(decodeErr.type, "error")
+  assert.equal(decodeErr.id, "x2")
+  assert.equal(typeof decodeErr.payload.message, "string")
+  assert.equal(decodeErr.error, undefined)
   authed.send("not json")
   assert.equal((await once(authed, "close"))[0], 4002)
 
+  await srv.close()
+})
+
+test("closes pre-auth frames carrying an id", async () => {
+  const srv = await start()
+  const ws = new WebSocket(`ws://127.0.0.1:${srv.port}/agent`)
+  await once(ws, "open")
+  ws.send(JSON.stringify({ v: 2, id: "x" }))
+  assert.equal((await once(ws, "close"))[0], 4002)
   await srv.close()
 })
