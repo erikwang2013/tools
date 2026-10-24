@@ -119,12 +119,72 @@
         </li>
       </ul>
     </pw-section>
+
+    <pw-section class="green" id="agent" :label="$t('local_agent')" ref="agent">
+      <ul>
+        <li>
+          <label for="agent-url">{{ $t("agent_url") }}</label>
+          <input id="agent-url" type="url" v-model="agentUrl" :disabled="agentBusy" />
+        </li>
+      </ul>
+      <ul>
+        <li>
+          <label for="agent-token">{{ $t("agent_token") }}</label>
+          <input
+            id="agent-token"
+            type="password"
+            autocomplete="off"
+            v-model="agentToken"
+            :disabled="agentBusy"
+          />
+        </li>
+      </ul>
+      <ul>
+        <li>
+          <div class="flex-wrap">
+            <button @click="connectAgent" :disabled="agentBusy || agentStatus === 'connected'">
+              {{ $t("agent_connect") }}
+            </button>
+            <button @click="disconnectAgent" :disabled="agentStatus !== 'connected'">
+              {{ $t("agent_disconnect") }}
+            </button>
+            <span class="agent-status" :class="agentStatus">{{ $t(agentStatus) }}</span>
+          </div>
+        </li>
+      </ul>
+      <ul>
+        <li>
+          <p class="agent-hint">{{ $t("agent_permission_hint") }}</p>
+        </li>
+      </ul>
+    </pw-section>
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.agent-status {
+  margin-left: 8px;
+  color: var(--fg-light-color);
+
+  &.connected {
+    color: #50fa7b;
+  }
+
+  &.error {
+    color: var(--err-color);
+  }
+}
+
+.agent-hint {
+  margin: 0;
+  color: var(--fg-light-color);
+  font-size: 14px;
+}
+</style>
 
 <script>
+import { agentClient } from "~/functions/agent-client.mjs"
+
 export default {
   components: {
     "pw-section": () => import("../components/layout/section"),
@@ -234,6 +294,10 @@ export default {
       },
 
       doneButton: '<i class="material-icons">done</i>',
+
+      agentUrl: "ws://127.0.0.1:3567/agent",
+      agentToken: "",
+      agentStatus: agentClient.status,
     }
   },
 
@@ -288,6 +352,33 @@ export default {
       })
       setTimeout(() => (target.innerHTML = '<i class="material-icons">clear_all</i>'), 1000)
     },
+    async connectAgent() {
+      try {
+        await agentClient.connect(this.agentUrl, this.agentToken)
+        localStorage.setItem("postwoman.agent.url", this.agentUrl)
+        sessionStorage.setItem("postwoman.agent.token", this.agentToken)
+        this.$toast.success(this.$t("agent_connected"))
+      } catch (error) {
+        this.$toast.error(error.message || this.$t("error"))
+      }
+    },
+    disconnectAgent() {
+      agentClient.disconnect()
+      this.$toast.info(this.$t("agent_disconnected"))
+    },
+    onStatus(event) {
+      this.agentStatus = (event.detail && event.detail.status) || "disconnected"
+    },
+  },
+
+  mounted() {
+    this.agentUrl = localStorage.getItem("postwoman.agent.url") || this.agentUrl
+    this.agentToken = sessionStorage.getItem("postwoman.agent.token") || ""
+    agentClient.addEventListener("status", this.onStatus)
+  },
+
+  beforeDestroy() {
+    agentClient.removeEventListener("status", this.onStatus)
   },
 
   beforeMount() {
@@ -300,6 +391,9 @@ export default {
       return {
         url: this.settings.PROXY_URL,
       }
+    },
+    agentBusy() {
+      return this.agentStatus === "connecting"
     },
   },
 }

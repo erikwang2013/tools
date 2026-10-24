@@ -11,4 +11,10 @@ describe("Protocol Lab", () => {
     cy.contains("TCP").click()
     cy.get("input").should("have.length.at.least", 2)
   })
+
+  it("shows the local agent section in settings", () => {
+    cy.visit("/settings")
+    cy.contains(/local agent/i)
+    cy.get('input[type="password"]').should("have.length.at.least", 1)
+  })
 })
