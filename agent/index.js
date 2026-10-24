@@ -1,4 +1,5 @@
 const fs = require("node:fs")
+const path = require("node:path")
 const { createAgentServer } = require("./lib/server")
 const { DEFAULT_ORIGINS } = require("./lib/origin")
 const adapters = require("./adapters")
@@ -46,12 +47,17 @@ function loadConfig(file) {
   return config
 }
 
+function loadDefaultConfig() {
+  const file = path.join(__dirname, "config.json")
+  return fs.existsSync(file) ? loadConfig(file) : {}
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2))
   if (args.host !== "127.0.0.1") fail("--host only supports 127.0.0.1; the agent must stay on the local machine.")
 
-  const config = args.configPath ? loadConfig(args.configPath) : {}
-  const origins = args.origins.length > 0 ? args.origins : DEFAULT_ORIGINS
+  const config = args.configPath !== undefined ? loadConfig(args.configPath) : loadDefaultConfig()
+  const origins = [...new Set([...DEFAULT_ORIGINS, ...args.origins])]
 
   let agent
   try {

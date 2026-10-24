@@ -29,8 +29,8 @@ Every start with `Ctrl+C` or `SIGTERM` closes open sessions and exits cleanly.
 | --- | --- | --- |
 | `--port <n>` | WebSocket/HTTP port; `0` picks a free port | `3567` |
 | `--token <value>` | Use a fixed token instead of a random one | random per start |
-| `--origin <url>` | Allowed CORS Origin; repeat for several. When given, replaces the default list | default list |
-| `--config <file>` | MCP server config file (see below) | none |
+| `--origin <url>` | Adds an allowed CORS Origin; repeat for several | default list |
+| `--config <file>` | MCP server config file instead of `agent/config.json` | `agent/config.json` when present |
 | `--host <host>` | Only `127.0.0.1` is accepted | `127.0.0.1` |
 
 If the port is taken (for example, an earlier agent is still running), the agent prints
@@ -46,9 +46,10 @@ Keep the token private: anyone on this machine who has it can open sockets throu
 ## Origins
 
 Only browser pages served from an allowed Origin may connect. The default allowlist is
-`https://postwoman.erik.xyz`, `http://localhost:3000` and `http://127.0.0.1:3000`.
-Matching is exact (scheme, host and port), so a dev server on another port needs
-its own `--origin http://localhost:<port>` (repeat the flag to keep several origins).
+`https://postwoman.erik.xyz`, `http://localhost:3000` and `http://127.0.0.1:3000`, and it
+always stays allowed. `--origin` adds to it (repeat the flag for several); a dev server on
+another port needs `--origin http://localhost:<port>`. Matching is exact (scheme, host and
+port), and duplicates are ignored.
 
 ## Browser support
 
@@ -72,9 +73,11 @@ Use Chrome or Edge.
 
 ## MCP server config
 
-Copy `config.example.json` to `config.json` (git-ignored, keep machine-specific commands
-out of git), list your MCP stdio servers under `mcpServers`, and start with
-`npm run agent -- --config agent/config.json`:
+`agent/config.json` is loaded automatically when it exists (it is git-ignored, so
+machine-specific commands stay out of git). Copy `config.example.json` to `config.json`,
+list your MCP stdio servers under `mcpServers`, and start with `npm run agent`. Use
+`--config <file>` to load a different file instead; when neither exists, no MCP servers
+are configured. A present but unreadable file is a startup error naming the file.
 
 ```json
 {
