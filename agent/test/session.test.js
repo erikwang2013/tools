@@ -71,3 +71,53 @@ test("closes an adapter that resolves after the open timeout", async () => {
   await new Promise(resolve => setTimeout(resolve, 60))
   assert.equal(closed, 1)
 })
+
+test("closes a late adapter after a close during open and emits one closed", async () => {
+  const events = []
+  let closed = 0
+  const adapter = {
+    id: "late",
+    create: () => new Promise(resolve => setTimeout(
+      () => resolve({ send() {}, close() { closed += 1 } }),
+      30
+    )),
+  }
+  const mgr = new SessionManager({
+    adapters: { late: adapter },
+    emit: (id, e) => events.push(e),
+    openTimeoutMs: 5,
+  })
+  const opening = mgr.open("a", "late", {})
+  assert.equal(mgr.close("a"), true)
+  await assert.rejects(() => opening, /timed out/i)
+  await new Promise(resolve => setTimeout(resolve, 70))
+  assert.equal(closed, 1)
+  assert.deepEqual(events.map(e => e.type), ["closed"])
+  await assert.rejects(() => mgr.send("a", {}), /unknown session/i)
+})
+
+test("releases a session when the adapter closes itself", async () => {
+  let emitClosed
+  let adapterCloses = 0
+  const adapter = {
+    id: "self",
+    async create(config, emit) {
+      emitClosed = () => emit({ type: "closed", payload: { reason: "socket died" } })
+      return { send() {}, close() { adapterCloses += 1 } }
+    },
+  }
+  const events = []
+  const mgr = new SessionManager({
+    adapters: { self: adapter },
+    emit: (id, e) => events.push([id, e]),
+    maxSessions: 1,
+  })
+  await mgr.open("a", "self", {})
+  emitClosed()
+  assert.deepEqual(events, [["a", { type: "closed", payload: { reason: "socket died" } }]])
+  await assert.rejects(() => mgr.send("a", {}), /unknown session/i)
+  await mgr.open("a", "self", {}) // the id and the maxSessions slot are free again
+  mgr.closeAll()
+  mgr.closeAll()
+  assert.equal(adapterCloses, 1, "the self-closed adapter must not be closed again")
+})

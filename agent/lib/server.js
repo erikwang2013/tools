@@ -145,7 +145,9 @@ function createAgentServer({
       try {
         ({ ready } = await state.manager.open(message.id, message.protocol, message.config))
       } catch {
-        return // the manager already emitted error + closed
+        // Manager-emitted failure frames: error + closed, or only closed when the client
+        // closed the session while it was still opening.
+        return
       }
       send(ws, { v: 1, type: "ready", id: message.id, payload: ready })
       return

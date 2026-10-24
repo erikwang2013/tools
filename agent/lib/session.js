@@ -43,11 +43,12 @@ class SessionManager {
       return { ready: adapter.ready || {} }
     } catch (err) {
       clearTimeout(timer)
+      // A create that resolves after a timeout or a close during open must not leak.
+      // close() is expected to be idempotent, so this may repeat an earlier close.
+      pending.then(adapter => closeQuietly(adapter)).catch(() => {})
       if (!record.done) {
         record.done = true
         this.release(id, record)
-        // A create that resolves after a timeout must not leak its adapter.
-        pending.then(adapter => closeQuietly(adapter)).catch(() => {})
         this.emit(id, { type: "error", payload: { message: err.message } })
         this.emit(id, { type: "closed", payload: {} })
       }
@@ -77,7 +78,12 @@ class SessionManager {
 
   forward(id, record, event) {
     if (record.done) return
-    if (event.type === "closed") record.adapterClosed = true
+    if (event.type === "closed") {
+      // The adapter died on its own: free the id and capacity, keep its single closed frame.
+      record.adapterClosed = true
+      record.done = true
+      this.release(id, record)
+    }
     this.emit(id, event)
   }
 
