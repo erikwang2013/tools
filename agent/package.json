@@ -1,0 +1,8 @@
+{
+  "name": "postwoman-agent",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": ">=18 <19" },
+  "scripts": { "start": "node index.js", "test": "node --test test/" },
+  "dependencies": { "ws": "^8.18.0" }
+}
