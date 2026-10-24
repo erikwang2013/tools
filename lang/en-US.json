@@ -284,5 +284,16 @@
   "mqtt_subscribe": "Subscribe",
   "mqtt_unsubscribe": "Unsubscribe",
   "include_headers_in_url": "Include headers in URL",
-  "include_body_in_url": "Include body in URL"
+  "include_body_in_url": "Include body in URL",
+  "hex": "Hex",
+  "text": "Text",
+  "file": "File",
+  "xml": "XML",
+  "base64": "Base64",
+  "clear_log": "Clear log",
+  "bytes": "bytes",
+  "binary": "Binary data",
+  "invalid_hex": "Invalid hex",
+  "invalid_base64": "Invalid base64",
+  "payload_too_large": "Payload exceeds 16 MiB"
 }
