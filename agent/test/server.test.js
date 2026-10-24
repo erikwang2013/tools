@@ -3,11 +3,44 @@ const assert = require("node:assert/strict")
 const { once } = require("node:events")
 const WebSocket = require("ws")
 const { createAgentServer } = require("../lib/server")
+const { MAX_MESSAGE_BYTES } = require("../lib/envelope")
 
-async function start() {
+async function start(adapters = {}) {
   return createAgentServer({
-    port: 0, token: "test-token", origins: [], allowNoOrigin: true, adapters: {},
+    port: 0, token: "test-token", origins: [], allowNoOrigin: true, adapters,
   })
+}
+
+function next(ws) {
+  return once(ws, "message").then(([raw]) => JSON.parse(raw))
+}
+
+async function authed(port) {
+  const ws = new WebSocket(`ws://127.0.0.1:${port}/agent`)
+  await once(ws, "open")
+  ws.send(JSON.stringify({ v: 1, type: "auth", token: "test-token" }))
+  assert.equal((await next(ws)).type, "auth:ok")
+  return ws
+}
+
+function echoAdapter() {
+  const calls = { sent: [], closed: 0 }
+  return {
+    calls,
+    adapter: {
+      id: "echo",
+      async create(config, emit) {
+        return {
+          ready: { echoed: config.value },
+          send(payload) {
+            calls.sent.push(payload)
+            emit({ type: "data", payload: { encoding: "utf8", data: payload.data, bytes: 1 } })
+          },
+          close() { calls.closed += 1 },
+        }
+      },
+    },
+  }
 }
 
 test("serves health without auth", async () => {
@@ -59,7 +92,7 @@ test("returns an error for unhandled messages, closes malformed frames", async (
   await once(authed, "open")
   authed.send(JSON.stringify({ v: 1, type: "auth", token: "test-token" }))
   await once(authed, "message")
-  authed.send(JSON.stringify({ v: 1, type: "open", id: "s1" }))
+  authed.send(JSON.stringify({ v: 1, type: "log", id: "s1" }))
   const reply = JSON.parse((await once(authed, "message"))[0])
   assert.equal(reply.type, "error")
   assert.equal(reply.id, "s1")
@@ -83,5 +116,84 @@ test("closes pre-auth frames carrying an id", async () => {
   await once(ws, "open")
   ws.send(JSON.stringify({ v: 2, id: "x" }))
   assert.equal((await once(ws, "close"))[0], 4002)
+  await srv.close()
+})
+
+test("opens, relays and closes a session over the socket", async () => {
+  const { adapter, calls } = echoAdapter()
+  const srv = await start({ echo: adapter })
+  const ws = await authed(srv.port)
+
+  ws.send(JSON.stringify({ v: 1, type: "open", id: "s1", protocol: "echo", config: { value: "ok" } }))
+  const ready = await next(ws)
+  assert.equal(ready.type, "ready")
+  assert.equal(ready.id, "s1")
+  assert.deepEqual(ready.payload, { echoed: "ok" })
+
+  ws.send(JSON.stringify({ v: 1, type: "send", id: "s1", payload: { encoding: "utf8", data: "hi" } }))
+  const data = await next(ws)
+  assert.equal(data.type, "data")
+  assert.equal(data.id, "s1")
+  assert.deepEqual(calls.sent, [{ encoding: "utf8", data: "hi" }])
+
+  ws.send(JSON.stringify({ v: 1, type: "close", id: "s1" }))
+  const closed = await next(ws)
+  assert.equal(closed.type, "closed")
+  assert.equal(closed.id, "s1")
+  assert.equal(calls.closed, 1)
+
+  ws.close()
+  await srv.close()
+})
+
+test("reports unknown sessions without dropping the connection", async () => {
+  const { adapter } = echoAdapter()
+  const srv = await start({ echo: adapter })
+  const ws = await authed(srv.port)
+
+  ws.send(JSON.stringify({ v: 1, type: "send", id: "ghost", payload: {} }))
+  const sendErr = await next(ws)
+  assert.equal(sendErr.type, "error")
+  assert.equal(sendErr.id, "ghost")
+
+  ws.send(JSON.stringify({ v: 1, type: "close", id: "ghost" }))
+  const closeErr = await next(ws)
+  assert.equal(closeErr.type, "error")
+  assert.equal(closeErr.id, "ghost")
+
+  ws.send(JSON.stringify({ v: 1, type: "open", id: "s1", protocol: "echo", config: { value: 1 } }))
+  assert.equal((await next(ws)).type, "ready")
+  ws.close()
+  await srv.close()
+})
+
+test("turns an oversized outbound frame into a session error", async () => {
+  let emitBig
+  const adapter = {
+    id: "big",
+    async create(config, emit) {
+      if (config.trigger) {
+        emitBig = () => emit({
+          type: "data",
+          payload: { encoding: "utf8", data: "x".repeat(MAX_MESSAGE_BYTES), bytes: MAX_MESSAGE_BYTES },
+        })
+      }
+      return { send() {}, close() {} }
+    },
+  }
+  const srv = await start({ big: adapter })
+  const ws = await authed(srv.port)
+
+  ws.send(JSON.stringify({ v: 1, type: "open", id: "s1", protocol: "big", config: { trigger: true } }))
+  assert.equal((await next(ws)).type, "ready")
+  emitBig()
+  const err = await next(ws)
+  assert.equal(err.type, "error")
+  assert.equal(err.id, "s1")
+  assert.equal(err.payload.message, "message too large")
+
+  ws.send(JSON.stringify({ v: 1, type: "open", id: "s2", protocol: "big", config: {} }))
+  assert.equal((await next(ws)).type, "ready")
+  ws.close()
   await srv.close()
 })

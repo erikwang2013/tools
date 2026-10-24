@@ -4,6 +4,7 @@ const WebSocket = require("ws")
 const { WebSocketServer } = WebSocket
 const { encode, decode, MAX_MESSAGE_BYTES } = require("./envelope")
 const { DEFAULT_ORIGINS, isAllowedOrigin } = require("./origin")
+const { SessionManager } = require("./session")
 
 const PING_INTERVAL_MS = 30 * 1000
 
@@ -34,6 +35,8 @@ function createAgentServer({
   token = crypto.randomBytes(24).toString("hex"),
   origins = DEFAULT_ORIGINS,
   allowNoOrigin = false,
+  adapters = {},
+  config = {},
 } = {}) {
   const server = http.createServer((req, res) => {
     if (req.method === "GET" && req.url === "/health") {
@@ -55,24 +58,37 @@ function createAgentServer({
   })
 
   wss.on("connection", ws => {
-    const state = { authed: false, sessions: new Map() }
+    const manager = new SessionManager({
+      adapters,
+      emit: (id, event) => send(ws, { v: 1, type: event.type, id, payload: event.payload }),
+      context: {
+        port: server.address().port,
+        hookRouter: null,
+        bridgeRegistry: null,
+        mcpServers: config.mcpServers || {},
+      },
+    })
+    const state = { authed: false, manager }
     ws.isAlive = true
     ws.on("pong", () => { ws.isAlive = true })
     ws.on("error", () => {})
-    ws.on("message", raw => handleMessage(ws, state, raw))
+    ws.on("close", () => manager.closeAll())
+    // Session failures are reported over the socket; an unexpected throw only ends this connection.
+    ws.on("message", raw => handleMessage(ws, state, raw).catch(() => ws.close(4002)))
   })
 
   // encode() rejects malformed messages; ws.send throws on a closing socket.
   function send(ws, message) {
     if (ws.readyState !== WebSocket.OPEN) return
+    const id = message && typeof message === "object" ? message.id : undefined
     let raw
     try {
       raw = encode(message)
     } catch {
-      return sendFailure(ws, message.id, "invalid outbound message")
+      return sendFailure(ws, id, "invalid outbound message")
     }
     if (Buffer.byteLength(raw) > MAX_MESSAGE_BYTES) {
-      return sendFailure(ws, message.id, "message too large")
+      return sendFailure(ws, id, "message too large")
     }
     ws.send(raw)
   }
@@ -89,7 +105,7 @@ function createAgentServer({
     ws.close(4002)
   }
 
-  function handleMessage(ws, state, raw) {
+  async function handleMessage(ws, state, raw) {
     let message
     try {
       message = decode(raw)
@@ -117,7 +133,29 @@ function createAgentServer({
       ws.close(4002)
       return
     }
+    if (message.type === "open" || message.type === "send" || message.type === "close") {
+      return handleSession(ws, state, message)
+    }
     send(ws, { v: 1, type: "error", id: message.id, payload: { message: `unsupported type: ${message.type}` } })
+  }
+
+  async function handleSession(ws, state, message) {
+    if (message.type === "open") {
+      let ready
+      try {
+        ({ ready } = await state.manager.open(message.id, message.protocol, message.config))
+      } catch {
+        return // the manager already emitted error + closed
+      }
+      send(ws, { v: 1, type: "ready", id: message.id, payload: ready })
+      return
+    }
+    try {
+      if (message.type === "send") await state.manager.send(message.id, message.payload)
+      else if (!state.manager.close(message.id)) throw new Error(`unknown session: ${message.id}`)
+    } catch (err) {
+      send(ws, { v: 1, type: "error", id: message.id, payload: { message: err.message } })
+    }
   }
 
   let pingTimer
