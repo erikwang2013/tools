@@ -917,6 +917,8 @@ git commit -m "feat(ui): add payload editor and protocol log"
 - Create: `functions/http-normalize.mjs`
 - Create: `functions/http-request.js`
 - Create: `test/http-normalize.test.mjs`
+- Modify: `nuxt.config.js`（`build.extend` 中让 Babel 处理 `.mjs`）
+- Modify: `lang/en-US.json`（仅补 lab 需要且尚不存在的键，如 `agent_offline_hint`、`agent_required`、`start_agent_command`、`close`）
 
 **Interfaces:**
 - Consumes: 注册表、AgentClient、payload/log 组件、`sendNetworkRequest`
@@ -924,6 +926,11 @@ git commit -m "feat(ui): add payload editor and protocol log"
   - `lab.vue` props `{ protocol: Object }`
   - `normalizeResponse(raw) -> { status, headers, data }`
   - `sendHttp(req, store) -> Promise<{ status, headers, data }>`
+
+- [ ] **Step 0: 让 Nuxt 的 Babel 处理 `.mjs`**
+
+`nuxt.config.js` 的 `build.extend(config)` 里找到现有 babel-loader 规则，把 `test` 从 `/\.jsx?$/i` 扩为 `/\.(jsx?|mjs)$/i`（或新增一条 `.mjs` 规则并复用 `@nuxt/babel-preset-app`）。不要改变其他 loader 配置。
+验证：用隔离的 webpack 4 脚本 import `functions/payload.mjs`（含 `??`）能成功解析；完整的 `npm run generate` 在 Task 14 验证。
 
 - [ ] **Step 1: 写响应归一化失败测试**
 
