@@ -1,4 +1,5 @@
 const BASE64_RE = /^[A-Za-z0-9+/]*={0,2}$/
+const HEX_PAIRS = Array.from({ length: 256 }, (_, byte) => byte.toString(16).padStart(2, "0"))
 
 export function isHex(value) {
   return typeof value === "string" && value.length % 2 === 0 && /^[0-9a-fA-F]*$/.test(value)
@@ -18,7 +19,12 @@ export function hexToBytes(hex) {
 }
 
 export function bytesToHex(bytes) {
-  return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("")
+  const chunks = []
+  // Chunked: one N-element array of per-byte strings costs ~1.2 GB at the 16 MiB cap.
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    chunks.push(Array.from(bytes.subarray(i, i + 0x8000), byte => HEX_PAIRS[byte]).join(""))
+  }
+  return chunks.join("")
 }
 
 export function base64ToBytes(base64) {
@@ -47,11 +53,10 @@ export function bytesToUtf8(bytes) {
 }
 
 export function toHexDump(bytes, { width = 16, offset = true } = {}) {
+  const step = Math.max(1, Math.trunc(width) || 0)
   const lines = []
-  for (let i = 0; i < bytes.length; i += width) {
-    const hex = Array.from(bytes.subarray(i, i + width), byte =>
-      byte.toString(16).padStart(2, "0")
-    ).join(" ")
+  for (let i = 0; i < bytes.length; i += step) {
+    const hex = Array.from(bytes.subarray(i, i + step), byte => HEX_PAIRS[byte]).join(" ")
     lines.push(offset ? `${i.toString(16).padStart(8, "0")}  ${hex}` : hex)
   }
   return lines.join("\n")
