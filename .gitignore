@@ -5,6 +5,7 @@ agent/node_modules/
 # Nuxt build output
 .nuxt/
 dist/
+.postwoman/version.json
 
 # Agent local config (may contain machine-specific commands/paths)
 agent/config.json
