@@ -247,6 +247,42 @@ _Add-ons are developed and maintained under **[Official Postwoman Organization](
 
 You're done!
 
+## Protocol Lab 🧪
+
+The Protocol Lab at `/protocols` is a generic workbench for non-HTTP protocols. **Phase 0 ships TCP and UDP**; the other groups (HTTP, Browser Realtime, RPC & Messaging, IoT / Industrial) arrive in later phases.
+
+TCP and UDP cannot be opened by a web page directly, so the lab sends them through the Local Agent below. Field reference, receive encodings, payload modes and a manual test checklist are in [docs/protocol-lab.md](docs/protocol-lab.md).
+
+## Local Agent 🤖
+
+A small WebSocket agent that gives the Protocol Lab raw TCP/UDP sockets. It listens on loopback only and authenticates each connection with a token.
+
+**Node 16–18 is required** (the repo pins 18 in `.nvmrc`; Nuxt 2.12 aborts on Node 22). The agent itself requires Node 18.
+
+```bash
+npm --prefix agent install   # the agent has its own dependencies (ws)
+npm run agent                # ws://127.0.0.1:3567/agent
+```
+
+Startup prints the URL, a random token and the allowed origins:
+
+```
+Postwoman Agent listening on ws://127.0.0.1:3567/agent
+Token: <random hex>
+Allowed origins: https://postwoman.erik.xyz, http://localhost:3000, http://127.0.0.1:3000
+```
+
+Open **Settings → Local Agent**, keep the default URL, paste the printed token and click **Connect**. The token is regenerated on every start unless you pass `--token`, so paste the new one after each restart. Options (`--port`, `--origin`, `--token`, `--config`) are documented in [agent/README.md](agent/README.md).
+
+**Browser permission.** The page is served over HTTPS and the agent is on loopback, so Chrome and Edge ask for **Local network access** the first time. Choose Allow; if the prompt was dismissed, re-enable it under site settings → Permissions → Local network access and reload. Firefox is best-effort and not a supported target; Safari does not support Local Network Access, so the TCP/UDP lab is unavailable there.
+
+**Security boundary.**
+
+- The agent binds `127.0.0.1` only; `--host` refuses anything else.
+- Every WebSocket upgrade needs the printed token and an exact-match Origin from the allowlist (`https://postwoman.erik.xyz`, `http://localhost:3000`, `http://127.0.0.1:3000`; add more with `--origin`).
+- The page never sends file paths or commands to the agent.
+- MCP stdio servers can only be started from entries in `agent/config.json` (git-ignored; copy `agent/config.example.json`); the page can select those entries but cannot add or modify them.
+
 ## Built with 🔧
 
 * [Chromium](https://github.com/chromium/chromium) - Thanks for being so fast!
