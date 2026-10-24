@@ -452,7 +452,15 @@ export default {
     /*
      ** You can extend webpack config here
      */
-    extend(config, ctx) {},
+    extend(config) {
+      // Nuxt's babel-loader rule only covers .js/.jsx; protocol modules are .mjs and use
+      // syntax (??) that webpack 4's parser cannot read without Babel.
+      for (const rule of config.module.rules) {
+        if (rule.test instanceof RegExp && rule.test.source === "\\.jsx?$") {
+          rule.test = /\.(jsx?|mjs)$/i
+        }
+      }
+    },
   },
   /*
    ** Generate configuration

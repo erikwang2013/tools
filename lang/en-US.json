@@ -295,5 +295,10 @@
   "binary": "Binary data",
   "invalid_hex": "Invalid hex",
   "invalid_base64": "Invalid base64",
-  "payload_too_large": "Payload exceeds 16 MiB"
+  "payload_too_large": "Payload exceeds 16 MiB",
+  "agent_required": "This protocol requires the local agent.",
+  "agent_offline_hint": "The local agent is not connected.",
+  "start_agent_command": "Start it with",
+  "connecting": "Connecting...",
+  "panel_not_implemented": "This panel is not implemented yet."
 }
