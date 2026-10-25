@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.10.0 (2026-10-25)
+
+**Protocol Lab — Phase 0**
+
+- Added a local companion Agent (`agent/`): loopback-only HTTP/WebSocket server, per-start token, exact Origin allowlist, session lifecycle, 16 MiB message/frame caps, ping/pong keepalive, and clean shutdown.
+- Added TCP and UDP debugging with text/base64 payloads, TCP line framing, UDP source-address display, and a 16 MiB payload editor.
+- Added the registry-driven `/protocols` Protocol Lab page, protocol log (2000-entry retention), and Settings → Local Agent connection UI.
+- Added the 39-entry multi-protocol roadmap; Phase 0 ships TCP/UDP, with 38 further protocol/capability entries planned.
+- Build and verification: `.mjs` Babel rule for Nuxt 2, static generation for all locales, `npm run test:unit` 16/16, `npm run test:agent` 38/38, Cypress 14/14.
+
 ## [v1.9.5](https://github.com/liyasthomas/postwoman/tree/v1.9.5) (2020-03-22)
 
 [Full Changelog](https://github.com/liyasthomas/postwoman/compare/v1.9.0...v1.9.5)
