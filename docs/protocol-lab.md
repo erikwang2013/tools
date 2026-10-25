@@ -35,6 +35,22 @@ The agent's control plane (HTTP/WebSocket) binds `127.0.0.1` only. A UDP session
 other target it binds the wildcard address (`0.0.0.0`), because a loopback-bound socket cannot receive
 replies from a LAN device.
 
+## Performance budget
+
+The Agent's local **CPU processing** budget is **p99 < 10 ms** per operation. Wall time is reported alongside it, but host scheduling and external network time are excluded. Run it with:
+
+```bash
+npm run bench:agent   # table + non-zero exit if a p99 exceeds 10 ms
+npm run test:perf     # assertion form
+```
+
+The budget covers work the Agent controls: envelope encode/decode, session open/send
+bookkeeping, the `/proxy/http` and `/hook` handlers (with an immediate mock upstream), and the
+protocol codecs. CPU time excludes network RTT, DNS, TLS, broker/device time, external process
+startup (MCP stdio), and the time an external target takes to answer; wall time is shown for
+visibility. On a busy host the event loop can add isolated wall-time spikes that are not Agent CPU
+work; run the benchmark on the target machine when checking the budget.
+
 ## Other entries
 
 | Group | Entries | Transport | Notes / subset |

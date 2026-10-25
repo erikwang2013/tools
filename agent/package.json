@@ -7,7 +7,9 @@
   },
   "scripts": {
     "start": "node index.js",
-    "test": "node --test test/*.test.js test/*.test.mjs"
+    "test": "node --test test/*.test.js test/*.test.mjs",
+    "test:perf": "AGENT_PERF=1 node --test test/performance.test.js",
+    "bench": "node bench/local-latency.js"
   },
   "dependencies": {
     "@bacnet-js/client": "^3.3.2",

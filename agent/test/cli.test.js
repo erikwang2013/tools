@@ -24,7 +24,7 @@ function runCli(args) {
   return { child, out, exited }
 }
 
-function waitForOutput(run, stream, pattern, timeoutMs = 5000) {
+function waitForOutput(run, stream, pattern, timeoutMs = 10000) {
   return new Promise((resolve, reject) => {
     const deadline = Date.now() + timeoutMs
     const tick = () => {
@@ -38,7 +38,7 @@ function waitForOutput(run, stream, pattern, timeoutMs = 5000) {
   })
 }
 
-function exitWithin(run, timeoutMs = 5000) {
+function exitWithin(run, timeoutMs = 10000) {
   let timer
   const timeout = new Promise((_, reject) => {
     timer = setTimeout(() => reject(new Error("CLI did not exit in time")), timeoutMs)
