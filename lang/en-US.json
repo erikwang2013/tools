@@ -311,5 +311,17 @@
   "agent_permission_hint": "Connect to the local agent to run raw network protocols. Chrome or Edge may ask for Local Network Access permission; Safari is not supported.",
   "panel_not_implemented": "This panel is not implemented yet.",
   "protocols": "Protocols",
-  "protocol_lab": "Protocol Lab"
+  "protocol_lab": "Protocol Lab",
+  "retry_via_agent": "Retry via Agent",
+  "via_agent": "Via Agent",
+  "fetch_card": "Fetch Card",
+  "send_message": "Send Message",
+  "list_tools": "List tools",
+  "tools": "Tools",
+  "tool_args": "Tool arguments",
+  "call_tool": "Call tool",
+  "load_playlist": "Load playlist",
+  "start_loopback": "Start loopback",
+  "manual_sdp": "Manual SDP",
+  "webhooks_hint": "Click Connect to allocate a local hook URL; incoming requests appear in the log below."
 }

@@ -5,6 +5,9 @@ const { WebSocketServer } = WebSocket
 const { encode, decode, MAX_MESSAGE_BYTES } = require("./envelope")
 const { DEFAULT_ORIGINS, isAllowedOrigin } = require("./origin")
 const { SessionManager } = require("./session")
+const { createHttpProxy } = require("./http-proxy")
+const { createHookRouter } = require("./hooks")
+const { createBridgeRegistry } = require("./ws-bridge")
 
 const PING_INTERVAL_MS = 30 * 1000
 
@@ -37,9 +40,28 @@ function createAgentServer({
   allowNoOrigin = false,
   adapters = {},
   config = {},
+  fetchImpl,
 } = {}) {
   if (typeof token !== "string" || token.trim() === "") throw new Error("token must not be empty")
+  const proxy = createHttpProxy({ token, origins, allowNoOrigin, fetchImpl })
+  const hookRouter = createHookRouter()
   const server = http.createServer((req, res) => {
+    if (req.url === "/proxy/http") {
+      proxy(req, res).catch(() => {
+        if (!res.headersSent) res.writeHead(500, { "Content-Type": "application/json" })
+        res.end(JSON.stringify({ error: "proxy failed" }))
+      })
+      return
+    }
+    if ((req.url || "").startsWith("/hook/")) {
+      hookRouter.handle(req, res).then(handled => {
+        if (!handled) {
+          res.writeHead(404, { "Content-Type": "application/json" })
+          res.end(JSON.stringify({ error: "not found" }))
+        }
+      })
+      return
+    }
     if (req.method === "GET" && req.url === "/health") {
       res.writeHead(200, { "Content-Type": "application/json" })
       res.end(JSON.stringify({ ok: true }))
@@ -49,8 +71,14 @@ function createAgentServer({
     res.end(JSON.stringify({ error: "not found" }))
   })
   const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_MESSAGE_BYTES })
+  const bridgeRegistry = createBridgeRegistry({
+    getPort: () => server.address().port,
+    origins,
+    allowNoOrigin,
+  })
 
   server.on("upgrade", (req, socket, head) => {
+    if (bridgeRegistry.handleUpgrade(req, socket, head)) return
     if (req.url !== "/agent") return refuse(socket, "404 Not Found")
     const origin = req.headers.origin
     const allowed = origin === undefined ? allowNoOrigin : isAllowedOrigin(origin, origins)
@@ -64,8 +92,8 @@ function createAgentServer({
       emit: (id, event) => send(ws, { v: 1, type: event.type, id, payload: event.payload }),
       context: {
         port: server.address().port,
-        hookRouter: null,
-        bridgeRegistry: null,
+        hookRouter,
+        bridgeRegistry,
         mcpServers: config.mcpServers || {},
       },
     })
@@ -176,6 +204,7 @@ function createAgentServer({
 
   function close() {
     clearInterval(pingTimer)
+    bridgeRegistry.closeAll()
     for (const ws of wss.clients) ws.terminate()
     wss.close()
     return new Promise(resolve => {

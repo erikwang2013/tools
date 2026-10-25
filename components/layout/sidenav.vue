@@ -26,7 +26,7 @@
         v-tooltip.right="$t('protocols')"
         :aria-label="$t('protocols')"
       >
-        <i class="material-icons">lan</i>
+        <i class="material-icons">device_hub</i>
       </nuxt-link>
       <nuxt-link
         :to="localePath('graphql')"

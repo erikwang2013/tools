@@ -82,7 +82,14 @@
       @input="payload = $event"
     />
 
-    <component v-if="panelComponent" :is="panelComponent" :protocol="protocol" :fields="fields" />
+    <component
+      v-if="panelComponent"
+      :is="panelComponent"
+      :protocol="protocol"
+      :fields="fields"
+      :payload="payload"
+      @log="onPanelLog"
+    />
     <p v-else-if="protocol.transport === 'browser'" class="lab-hint">
       {{ $t("panel_not_implemented") }}
     </p>
@@ -114,6 +121,10 @@
       >
         <i class="material-icons">sync_disabled</i>
         <span>{{ $t("close") }}</span>
+      </button>
+      <button v-if="canRetryViaAgent" class="icon" @click="retryViaAgent">
+        <i class="material-icons">sync</i>
+        <span>{{ $t("retry_via_agent") }}</span>
       </button>
     </div>
 
@@ -188,6 +199,8 @@ p.lab-hint {
 
 <script>
 import { agentClient } from "~/functions/agent-client.mjs"
+import { bytesToBase64 } from "~/functions/bytes.mjs"
+import { describeBinaryResponse } from "~/functions/http-normalize.mjs"
 import { sendHttp } from "~/functions/http-request"
 import { editorToWire } from "~/functions/payload.mjs"
 import { makeLogEntry } from "~/functions/log-entry.mjs"
@@ -202,7 +215,16 @@ const PAYLOAD_MODES = {
 }
 
 // Browser transport panels register here as { [descriptor.panel]: Component }.
-const PANELS = {}
+const PANELS = {
+  a2a: () => import("./panels/a2a.vue"),
+  hls: () => import("./panels/hls.vue"),
+  mcp: () => import("./panels/mcp.vue"),
+  sip: () => import("./panels/sip.vue"),
+  stomp: () => import("./panels/stomp.vue"),
+  webhooks: () => import("./panels/webhooks.vue"),
+  webrtc: () => import("./panels/webrtc.vue"),
+  xmpp: () => import("./panels/xmpp.vue"),
+}
 
 const TRANSPORTS = { agent: "Agent", browser: "Browser", http: "HTTP" }
 
@@ -227,6 +249,7 @@ export default {
       sessionId: null,
       busy: false,
       generation: 0,
+      lastFailedRequest: null,
     }
   },
   computed: {
@@ -251,6 +274,9 @@ export default {
     canSend() {
       if (this.busy) return false
       return this.isAgent ? Boolean(this.sessionId) && this.agentConnected : true
+    },
+    canRetryViaAgent() {
+      return Boolean(this.protocol.agentFallback && this.agentConnected && this.lastFailedRequest && !this.busy)
     },
   },
   watch: {
@@ -320,7 +346,9 @@ export default {
         } else if (field.type === "checkbox") {
           fields[field.key] = false
         } else if (field.type === "number" || field.type === "timer") {
-          fields[field.key] = 0
+          // Optional numeric fields start empty so builders can omit them; fields
+          // that need 0 declare default: 0 explicitly.
+          fields[field.key] = ""
         } else {
           fields[field.key] = ""
         }
@@ -335,9 +363,15 @@ export default {
       this.generation++
       this.closeSession()
       this.busy = false
+      this.lastFailedRequest = null
       this.initFields()
       this.initPayload()
       this.entries = []
+    },
+    onPanelLog(event) {
+      if (!event) return
+      if (event.message !== undefined) this.push(event.direction || "info", event.message)
+      else this.push(event.direction || "received", event.data, event.encoding, { bytes: event.bytes })
     },
     push(direction, data, encoding, extra) {
       this.entries.push(makeLogEntry({ direction, encoding, data, ...extra }))
@@ -451,14 +485,58 @@ export default {
         return this.logError(error)
       }
       this.busy = true
+      this.lastFailedRequest = null
       try {
         const { status, headers, data } = await sendHttp(request, this.$store)
         if (generation !== this.generation) return
+        if (request.responseType === "arraybuffer") {
+          const settings = this.$store.state.postwoman.settings
+          const check = describeBinaryResponse(data, {
+            responseType: "arraybuffer",
+            viaProxy:
+              Boolean(settings.PROXY_ENABLED) ||
+              typeof window.__POSTWOMAN_EXTENSION_HOOK__ !== "undefined",
+          })
+          if (!check.ok) return this.push("error", check.message)
+          const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data
+          this.push("info", this.formatResponse(status, headers, ""))
+          this.push("received", bytesToBase64(bytes), "base64", { bytes: bytes.length })
+          return
+        }
         this.push("received", this.formatResponse(status, headers, data))
       } catch (error) {
-        if (generation === this.generation) this.logError(error)
+        if (generation === this.generation) {
+          if (this.protocol.agentFallback && this.agentConnected) this.lastFailedRequest = request
+          this.logError(error)
+        }
       } finally {
         if (generation === this.generation) this.busy = false
+      }
+    },
+    async retryViaAgent() {
+      const request = this.lastFailedRequest
+      if (!request || !this.canRetryViaAgent) return
+      this.busy = true
+      try {
+        const { sessionId, payload } = await agentClient.open("http-proxy", {
+          url: request.url,
+          method: request.method,
+          headers: request.headers,
+        })
+        this.sessionId = sessionId
+        this.lastFailedRequest = null
+        this.push("info", `${this.$t("via_agent")} ${JSON.stringify(payload || {})}`)
+        let wire = null
+        if (request.data instanceof Uint8Array) {
+          wire = { encoding: "base64", data: bytesToBase64(request.data) }
+        } else if (typeof request.data === "string") {
+          wire = { encoding: "utf8", data: request.data }
+        }
+        await agentClient.send(sessionId, wire)
+      } catch (error) {
+        this.logError(error)
+      } finally {
+        this.busy = false
       }
     },
   },

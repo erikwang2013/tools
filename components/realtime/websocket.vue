@@ -37,6 +37,13 @@
       </ul>
       <ul>
         <li>
+          <label for="websocket-mode">{{ $t("payload") }}</label>
+          <select id="websocket-mode" v-model="binaryMode" :disabled="connectionState">
+            <option :value="false">{{ $t("text") }}</option>
+            <option :value="true">{{ $t("binary") }}</option>
+          </select>
+        </li>
+        <li>
           <label for="websocket-message">{{ $t("message") }}</label>
           <input
             id="websocket-message"
@@ -44,6 +51,7 @@
             type="text"
             v-model="communication.input"
             :readonly="!connectionState"
+            :placeholder="binaryMode ? 'Hex bytes, e.g. 68656c6c6f' : ''"
             @keyup.enter="connectionState ? sendMessage() : null"
           />
         </li>
@@ -64,6 +72,7 @@
 </template>
 
 <script>
+import { hexToBytes, isHex, toHexDump } from "~/functions/bytes.mjs"
 import { wsValid } from "~/functions/utils/valid"
 
 export default {
@@ -75,6 +84,7 @@ export default {
     return {
       connectionState: false,
       connecting: false,
+      binaryMode: false,
       url: "wss://echo.websocket.org",
       socket: null,
       communication: {
@@ -107,6 +117,7 @@ export default {
       ]
       try {
         this.socket = new WebSocket(this.url)
+        this.socket.binaryType = "arraybuffer"
         this.socket.onopen = event => {
           this.connecting = false
           this.connectionState = true
@@ -140,7 +151,10 @@ export default {
         }
         this.socket.onmessage = event => {
           this.communication.log.push({
-            payload: event.data,
+            payload:
+              event.data instanceof ArrayBuffer
+                ? toHexDump(new Uint8Array(event.data))
+                : event.data,
             source: "server",
             ts: new Date().toLocaleTimeString(),
           })
@@ -177,9 +191,20 @@ export default {
     sendMessage() {
       if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return
       const message = this.communication.input
-      this.socket.send(message)
+      let payload = message
+      if (this.binaryMode) {
+        if (!isHex(message)) {
+          this.$toast.error(this.$t("invalid_hex"), { icon: "error" })
+          return
+        }
+        const bytes = hexToBytes(message)
+        payload = toHexDump(bytes)
+        this.socket.send(bytes.buffer)
+      } else {
+        this.socket.send(message)
+      }
       this.communication.log.push({
-        payload: message,
+        payload,
         source: "client",
         ts: new Date().toLocaleTimeString(),
       })

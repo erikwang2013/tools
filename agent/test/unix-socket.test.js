@@ -1,0 +1,21 @@
+const test = require("node:test")
+const assert = require("node:assert/strict")
+const net = require("node:net")
+const os = require("node:os")
+const path = require("node:path")
+const fs = require("node:fs")
+const adapter = require("../adapters/unix-socket")
+
+test("echoes over a unix domain socket", async () => {
+  const socketPath = path.join(os.tmpdir(), `postwoman-${process.pid}-${Date.now()}.sock`)
+  const server = net.createServer(socket => socket.pipe(socket))
+  await new Promise(resolve => server.listen(socketPath, resolve))
+  const events = []
+  const session = await adapter.create({ path: socketPath, encoding: "utf8" }, event => events.push(event))
+  session.send({ encoding: "utf8", data: "hello" })
+  await new Promise(resolve => setTimeout(resolve, 100))
+  assert.equal(events.find(event => event.type === "data").payload.data, "hello")
+  session.close()
+  await new Promise(resolve => server.close(resolve))
+  if (fs.existsSync(socketPath)) fs.unlinkSync(socketPath)
+})

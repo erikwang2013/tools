@@ -6,6 +6,23 @@ describe("Protocol Lab", () => {
     cy.contains(/agent/i)
   })
 
+  it("renders every group with icons", () => {
+    cy.visit("/protocols", { retryOnStatusCodeFailure: true })
+    for (const group of [
+      "HTTP",
+      "Browser Realtime",
+      "Raw & Streaming",
+      "RPC & Messaging",
+      "IoT / Industrial",
+      "Agent",
+    ]) {
+      cy.contains(group)
+    }
+    cy.get(".protocol-group h4 .material-icons").should("have.length", 6)
+    cy.get(".protocol-button").should("have.length", 38)
+    cy.get(".protocol-button .material-icons").should("have.length", 38)
+  })
+
   it("selects a protocol and renders its fields", () => {
     cy.visit("/protocols", { retryOnStatusCodeFailure: true })
     cy.contains("TCP").click()

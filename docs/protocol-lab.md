@@ -5,10 +5,12 @@ described by a registry entry (`protocols/registry.mjs`) that declares its confi
 mode, transport and actions; the UI (`components/protocols/lab.vue`) renders that descriptor without
 protocol-specific code.
 
-**Phase 0 scope: TCP and UDP over the Local Agent.** Other groups in the registry (HTTP, Browser
-Realtime, RPC & Messaging, IoT / Industrial) are added in later phases. Each protocol runs through
-the local agent described in [agent/README.md](../agent/README.md), whose control plane is
-loopback-only; nothing is proxied by the website.
+The registry ships 38 entries covering HTTP family, browser realtime, raw transports, RPC/messaging
+and IoT/industrial protocols, plus the WebSocket binary-frame mode on the existing Realtime page
+(39 capabilities in total). Protocols that need raw sockets run through the local agent described in
+[agent/README.md](../agent/README.md), whose control plane is loopback-only; nothing is proxied by
+the website. Browser-native entries (HLS, WebRTC, STOMP/XMPP/SIP, A2A, MCP remote) load their client
+libraries on demand.
 
 ## Protocols
 
@@ -32,6 +34,22 @@ The agent's control plane (HTTP/WebSocket) binds `127.0.0.1` only. A UDP session
 `127.0.0.1` when the target is loopback (`localhost`, `::1` or an address in `127.0.0.0/8`); for any
 other target it binds the wildcard address (`0.0.0.0`), because a loopback-bound socket cannot receive
 replies from a LAN device.
+
+## Other entries
+
+| Group | Entries | Transport | Notes / subset |
+| --- | --- | --- | --- |
+| HTTP | SOAP, JSON-RPC, XML-RPC, OData, HTTP Binary Body | Browser HTTP pipeline | Reuses the existing proxy/extension settings. Binary responses are only byte-accurate on the direct path; the UI explains when a proxy returned text. |
+| HTTP | HTTP/2, HTTP/3 | Agent | HTTP/2 uses Node `http2` (h2/h2c). HTTP/3 reports `UNSUPPORTED` unless an optional QUIC runtime is installed; browsers negotiate HTTP/3 automatically. |
+| Browser Realtime | HLS, WebRTC DataChannel | Browser | HLS logs manifests/fragments and plays in the page. WebRTC offers loopback and manual SDP modes; TURN and media codecs are out of scope. |
+| Browser Realtime | STOMP (WS), XMPP (WS), SIP (WS) | Browser or Agent WS bridge | Can fall back to the agent's one-time local bridge when CORS/Origin blocks the target. STOMP transactions, XMPP MUC and SIP media/INVITE are not implemented. |
+| Agent | Webhooks, A2A, MCP | Agent / Browser | Webhooks allocate a random `/hook/<secret>` URL. A2A does card discovery + `message/send`. MCP supports remote Streamable HTTP/SSE and agent-configured stdio servers. |
+| Raw & Streaming | Raw Socket, Unix Domain Socket, RTSP, RTMP, RTP, RTCP, ISO 8583 | Agent | Raw socket reuses TCP/UDP. RTSP supports OPTIONS/DESCRIBE/SETUP/PLAY/PAUSE/TEARDOWN with Digest auth. RTMP is a command/chunk subset (no media codecs). RTP/RTCP parse headers and reports. ISO 8583 uses a fixed 1987 field subset (2, 3, 4, 7, 11, 12, 13, 32, 37, 39, 41, 42, 49, 55). Unix sockets are path-based only (no Windows named pipes). |
+| RPC & Messaging | gRPC, Dubbo, Thrift, Hessian, AMQP, Kafka, STOMP (TCP) | Agent | gRPC supports unary + server streaming (no reflection). Dubbo is 2.x Hessian2 unary. Thrift uses a minimal IDL parser and TBinaryProtocol. Hessian uses the agent-side Hessian2 convention. AMQP/Kafka need a reachable broker; Kafka does not auto-reconnect. STOMP-TCP implements the frame subset. |
+| IoT / Industrial | CoAP, LwM2M, OPC UA, Modbus TCP, DNP3, IEC 60870-5-104, BACnet/IP | Agent | CoAP is `coap://` only (no DTLS) and supports Observe. LwM2M covers register/read/write/observe with text payloads. OPC UA uses SecurityPolicy None plus optional username/password. Modbus validates unit/address/quantity and supports guarded polling. DNP3 covers integrity/class reads and a CROB point operate. IEC 104 covers STARTDT, interrogation and single-point reads. BACnet/IP covers Who-Is, ReadProperty and numeric WriteProperty. Real-hardware behaviour is not part of automated tests. |
+
+Every entry keeps at most 2000 log rows and is capped at 16 MiB per message. Industrial and raw
+protocols normally have no authentication; use them only on isolated/trusted networks.
 
 ## Fields
 

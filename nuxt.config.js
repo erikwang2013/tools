@@ -443,6 +443,9 @@ export default {
    ** Build configuration
    */
   build: {
+    // Dynamic protocol clients use optional chaining/nullish coalescing, which
+    // webpack 4's parser cannot read; let Babel transpile these packages.
+    transpile: ["hls.js", "@xmpp/client", "sip.js"],
     loaders: sassImplementation
       ? {
           scss: { implementation: sassImplementation },

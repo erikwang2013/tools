@@ -249,9 +249,9 @@ You're done!
 
 ## Protocol Lab 🧪
 
-The Protocol Lab at `/protocols` is a generic workbench for non-HTTP protocols. **Phase 0 ships TCP and UDP**; the other groups (HTTP, Browser Realtime, RPC & Messaging, IoT / Industrial) arrive in later phases.
+The Protocol Lab at `/protocols` is a generic workbench for non-HTTP protocols. It ships the full catalogue: HTTP family (SOAP, JSON-RPC, XML-RPC, OData, HTTP binary, HTTP/2, HTTP/3), browser realtime (HLS, WebRTC, STOMP/XMPP/SIP), raw transports (TCP, UDP, raw socket, Unix sockets, RTSP, RTMP, RTP/RTCP, ISO 8583), RPC and messaging (gRPC, Dubbo, Thrift, Hessian, AMQP, Kafka, STOMP-TCP), and IoT/industrial (CoAP, LwM2M, OPC UA, Modbus, DNP3, IEC 104, BACnet/IP).
 
-TCP and UDP cannot be opened by a web page directly, so the lab sends them through the Local Agent below. Field reference, receive encodings, payload modes and a manual test checklist are in [docs/protocol-lab.md](docs/protocol-lab.md).
+Protocols that a browser cannot open directly run through the Local Agent below. Field reference, subset limits, receive encodings, payload modes and a manual test checklist are in [docs/protocol-lab.md](docs/protocol-lab.md).
 
 ## Local Agent 🤖
 

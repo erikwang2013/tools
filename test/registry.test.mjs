@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 import { createRequire } from "node:module"
-import { GROUPS, protocols, getProtocol } from "../protocols/registry.mjs"
+import { GROUPS, GROUP_ICONS, protocols, getProtocol } from "../protocols/registry.mjs"
 const require = createRequire(import.meta.url)
 const adapters = require("../agent/adapters/index.js")
 
@@ -28,6 +28,11 @@ test("groups are exact and ordered", () => {
     "IoT / Industrial",
     "Agent",
   ])
+})
+
+test("every group and protocol has an icon", () => {
+  assert.deepEqual(Object.keys(GROUP_ICONS), GROUPS)
+  for (const p of protocols) assert.ok(p.icon, `missing icon for ${p.id}`)
 })
 
 test("registry is internally consistent", () => {
