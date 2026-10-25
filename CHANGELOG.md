@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.11.0 (2026-10-25)
+
+**Protocol Lab — Phases 1–5 + icons**
+
+- Completed the Protocol Lab: 38 registry entries plus the WebSocket binary-frame mode (39 capabilities total). HTTP family: SOAP, JSON-RPC, XML-RPC, OData, HTTP Binary, HTTP/2, HTTP/3. Browser realtime: HLS, WebRTC DataChannel, STOMP/XMPP/SIP over WebSocket. Raw transports: raw socket, Unix socket, RTSP, RTMP, RTP/RTCP, ISO 8583. RPC/messaging: gRPC, Dubbo, Thrift, Hessian, AMQP, Kafka, STOMP-TCP. IoT/industrial: CoAP, LwM2M, OPC UA, Modbus TCP, DNP3, IEC 60870-5-104, BACnet/IP. Agent group: Webhooks, A2A, MCP (remote + stdio).
+- Added per-protocol and per-group Material icons, and replaced the missing `lan` ligature in the sidebar and agent status bar with `device_hub` / `dns`.
+- Agent infrastructure: HTTP proxy fallback, Webhooks receiver, origin-checked WebSocket bridge, MCP stdio adapter, and lazy-loaded protocol adapters.
+- Added tests for every adapter codec/round-trip; broker/device integration tests stay opt-in via `AMQP_URL`, `KAFKA_BROKERS`, `DNP3_TARGET`, `IEC104_TARGET`, `BACNET_TARGET`.
+- Verification: `npm run test:unit` 38/38, agent 100 passed / 2 skipped / 0 failed, static SPA generate succeeded. Known limits are documented in `docs/protocol-lab.md` (HTTP/3 unavailable on Node 18, OPC UA SecurityPolicy None, industrial protocol subsets, no real-hardware tests).
+
 ## v1.10.0 (2026-10-25)
 
 **Protocol Lab — Phase 0**
