@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.11.1 (2026-10-25)
+
+**Agent local latency budget**
+
+- Added `npm run bench:agent` and `npm run test:perf`: Agent CPU processing p99 < 10 ms across envelope encode/decode, session open/send, `/proxy/http`, Webhooks and protocol codecs. Wall time is reported separately; external network and host scheduling are excluded.
+- Documented the budget scope in `docs/protocol-lab.md` and relaxed CLI/gRPC test waits that could flake on a busy host.
+
 ## v1.11.0 (2026-10-25)
 
 **Protocol Lab — Phases 1–5 + icons**
