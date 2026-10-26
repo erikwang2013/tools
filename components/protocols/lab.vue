@@ -6,8 +6,12 @@
       <span v-if="isAgent" class="lab-status">{{ $t(agentStatus) }}</span>
     </div>
 
-    <ul>
-      <li v-for="field in protocol.fields" :key="field.key">
+    <ul class="lab-fields">
+      <li
+        v-for="field in protocol.fields"
+        :key="field.key"
+        :class="{ 'lab-field-wide': ['keyvalue', 'textarea'].includes(field.type) }"
+      >
         <template v-if="field.type === 'keyvalue'">
           <label>{{ field.label }}</label>
           <div v-for="(row, index) in keyvalues[field.key]" :key="index" class="lab-kv-row">
@@ -24,11 +28,11 @@
               @input="syncKeyvalue(field)"
             />
             <button class="icon" :aria-label="$t('delete')" @click="removeKeyvalue(field, index)">
-              <i class="material-icons">remove</i>
+              <pw-icon name="remove" />
             </button>
           </div>
           <button class="icon" @click="addKeyvalue(field)">
-            <i class="material-icons">add</i>
+            <pw-icon name="add" />
             <span>{{ $t("add_new") }}</span>
           </button>
         </template>
@@ -97,33 +101,32 @@
     <div class="lab-actions">
       <button
         v-if="protocol.transport === 'agent' && hasAction('connect')"
-        class="icon"
+        class="secondary"
         :disabled="!canConnect"
         @click="connect"
       >
-        <i class="material-icons">sync</i>
+        <pw-icon name="sync" />
         <span>{{ $t("connect") }}</span>
       </button>
       <button
         v-if="protocol.transport !== 'browser' && hasAction('send')"
-        class="icon"
         :disabled="!canSend"
         @click="send"
       >
-        <i class="material-icons">send</i>
+        <pw-icon name="send" />
         <span>{{ $t("send") }}</span>
       </button>
       <button
         v-if="protocol.transport === 'agent' && hasAction('close')"
-        class="icon"
+        class="secondary"
         :disabled="!sessionId"
         @click="close"
       >
-        <i class="material-icons">sync_disabled</i>
+        <pw-icon name="sync-disabled" />
         <span>{{ $t("close") }}</span>
       </button>
-      <button v-if="canRetryViaAgent" class="icon" @click="retryViaAgent">
-        <i class="material-icons">sync</i>
+      <button v-if="canRetryViaAgent" class="secondary" @click="retryViaAgent">
+        <pw-icon name="sync" />
         <span>{{ $t("retry_via_agent") }}</span>
       </button>
     </div>
@@ -141,58 +144,106 @@
 
 <style scoped lang="scss">
 div.protocol-lab {
-  margin: 4px;
-  width: calc(100% - 8px);
+  padding: 18px;
+  border: 1px solid var(--brd-color);
+  border-radius: var(--radius);
+  background-color: var(--bg-light-color);
+  box-shadow: var(--shadow-sm);
 }
 
 div.lab-header {
   display: flex;
-  align-items: baseline;
-  padding: 8px 4px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--brd-color);
 }
 
 .lab-title {
-  margin-right: 12px;
   font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
 }
 
-.lab-transport {
-  margin-right: 12px;
+.lab-transport,
+.lab-status {
+  padding: 3px 7px;
+  border-radius: 5px;
+  background-color: var(--bg-dark-color);
   color: var(--fg-light-color);
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
 }
 
 .lab-status {
   margin-left: auto;
-  color: var(--fg-light-color);
-  font-size: 14px;
+}
+
+ul.lab-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 14px;
+}
+
+ul.lab-fields > li {
+  display: flex;
+  flex-flow: column nowrap;
+  min-width: 0;
+}
+
+ul.lab-fields > li.lab-field-wide {
+  grid-column: 1 / -1;
 }
 
 .lab-kv-row {
   display: flex;
   align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
 
   input {
-    margin-right: 4px;
+    min-width: 0;
   }
 }
 
 div.lab-actions {
   display: flex;
-  padding: 8px 4px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 10px;
 
   button {
-    margin-right: 8px;
+    margin: 0;
   }
 }
 
 p.lab-hint {
-  padding: 8px 4px;
+  margin: 8px 0 12px;
+  padding: 9px 10px;
+  border: 1px solid var(--brd-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-color);
   color: var(--fg-light-color);
-  font-size: 14px;
+  font-size: 12.5px;
 
   code {
     color: var(--fg-color);
+    font-family: var(--font-mono);
+  }
+}
+
+@media (max-width: 768px) {
+  div.protocol-lab {
+    padding: 14px;
+  }
+
+  ul.lab-fields {
+    grid-template-columns: 1fr;
   }
 }
 </style>

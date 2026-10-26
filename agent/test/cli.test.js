@@ -119,7 +119,7 @@ test("--origin adds to the default allowlist", async () => {
   ])
   try {
     await waitForOutput(run, "stdout", /http:\/\/extra\.test/)
-    assert.match(run.out.stdout, /Allowed origins: .*https:\/\/postwoman\.erik\.xyz.*http:\/\/extra\.test/)
+    assert.match(run.out.stdout, /Allowed origins: .*https:\/\/tools\.erik\.xyz.*http:\/\/extra\.test/)
   } finally {
     run.child.kill("SIGKILL")
   }

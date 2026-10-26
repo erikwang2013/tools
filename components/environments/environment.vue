@@ -2,24 +2,24 @@
   <div class="flex-wrap">
     <div>
       <button class="icon" @click="$emit('select-environment')" v-tooltip="$t('use_environment')">
-        <i class="material-icons">insert_drive_file</i>
+        <pw-icon name="insert-drive-file" />
         <span>{{ environment.name }}</span>
       </button>
     </div>
     <v-popover>
       <button class="tooltip-target icon" v-tooltip="$t('more')">
-        <i class="material-icons">more_vert</i>
+        <pw-icon name="more" />
       </button>
       <template slot="popover">
         <div>
           <button class="icon" @click="$emit('edit-environment')" v-close-popover>
-            <i class="material-icons">create</i>
+            <pw-icon name="create" />
             <span>{{ $t("edit") }}</span>
           </button>
         </div>
         <div>
           <button class="icon" @click="removeEnvironment" v-close-popover>
-            <i class="material-icons">delete</i>
+            <pw-icon name="delete" />
             <span>{{ $t("delete") }}</span>
           </button>
         </div>
@@ -29,15 +29,22 @@
 </template>
 
 <style scoped lang="scss">
-ul {
-  display: flex;
-  flex-direction: column;
+.flex-wrap {
+  gap: 2px;
 }
 
-ul li {
-  display: flex;
-  padding-left: 16px;
-  border-left: 1px solid var(--brd-color);
+button.icon {
+  justify-content: flex-start;
+  max-width: 100%;
+  padding: 0 6px;
+  color: var(--fg-color);
+  font-size: 12.5px;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 </style>
 

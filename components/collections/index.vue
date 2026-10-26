@@ -42,7 +42,7 @@ TODO:
     <div class="flex-wrap">
       <div>
         <button class="icon" @click="displayModalAdd(true)">
-          <i class="material-icons">add</i>
+          <pw-icon name="add" />
           <span>{{ $t("new") }}</span>
         </button>
       </div>
@@ -50,19 +50,10 @@ TODO:
         <button class="icon" @click="displayModalImportExport(true)">
           {{ $t("import_export") }}
         </button>
-        <!-- <a
-          href="https://github.com/liyasthomas/postwoman/wiki/Collections"
-          target="_blank"
-          rel="noopener"
-        >
-          <button class="icon" v-tooltip="'Wiki'">
-            <i class="material-icons">help</i>
-          </button>
-        </a> -->
       </div>
     </div>
     <p v-if="collections.length === 0" class="info">
-      Create new collection
+      {{ $t("create_new_collection") }}
     </p>
     <virtual-list
       class="virtual-list"
@@ -82,13 +73,13 @@ TODO:
           />
         </li>
         <li v-if="collections.length === 0">
-          <label>Collections are empty</label>
+          <label>{{ $t("collections_empty") }}</label>
         </li>
       </ul>
     </virtual-list>
     <nuxt-link :to="localePath('doc')" :aria-label="$t('documentation')">
       <button class="icon">
-        <i class="material-icons">books</i>
+        <pw-icon name="books" />
         <span>{{ $t("generate_docs") }}</span>
       </button>
     </nuxt-link>
@@ -97,12 +88,13 @@ TODO:
 
 <style scoped lang="scss">
 .virtual-list {
-  max-height: calc(100vh - 286px);
+  max-height: calc(100vh - 300px);
 }
 
 ul {
   display: flex;
   flex-direction: column;
+  margin: 0;
 }
 </style>
 

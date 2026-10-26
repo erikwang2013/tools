@@ -12,7 +12,7 @@
         <li>
           <label for="collectionUpload">
             <button class="icon" @click="$refs.collectionUpload.click()" v-tooltip="$t('json')">
-              <i class="material-icons">folder</i>
+              <pw-icon name="folder" />
               <span>{{ $t("import_collections") }}</span>
             </button>
           </label>
@@ -44,31 +44,31 @@
       <ul>
         <li>
           <button class="icon" @click="getDoc">
-            <i class="material-icons">book</i>
+            <pw-icon name="book" />
             <span>{{ $t("generate_docs") }}</span>
           </button>
         </li>
       </ul>
     </pw-section>
 
-    <pw-section class="green" label="Documentation" ref="documentation">
+    <pw-section class="green" :label="$t('documentation')" ref="documentation">
       <p v-if="this.items.length === 0" class="info">
         {{ $t("generate_docs_first") }}
       </p>
       <div>
         <span class="collection" v-for="(collection, index) in this.items" :key="index">
           <h2>
-            <i class="material-icons">folder</i>
+            <pw-icon name="folder" />
             {{ collection.name || $t("none") }}
           </h2>
           <span class="folder" v-for="(folder, index) in collection.folders" :key="index">
             <h3>
-              <i class="material-icons">folder_open</i>
+              <pw-icon name="folder-open" />
               {{ folder.name || $t("none") }}
             </h3>
             <span class="request" v-for="(request, index) in folder.requests" :key="index">
               <h4>
-                <i class="material-icons">insert_drive_file</i>
+                <pw-icon name="insert-drive-file" />
                 {{ request.name || $t("none") }}
               </h4>
               <p class="doc-desc" v-if="request.url">
@@ -165,7 +165,7 @@
             :key="`request-${index}`"
           >
             <h4>
-              <i class="material-icons">insert_drive_file</i>
+              <pw-icon name="insert-drive-file" />
               {{ request.name || $t("none") }}
             </h4>
             <p class="doc-desc" v-if="request.url">
@@ -262,43 +262,83 @@
 
 <style scoped lang="scss">
 .collection,
-.doc-desc,
 .folder,
-.request {
+.request,
+.doc-desc {
   display: flex;
   flex-flow: column;
-  justify-content: center;
   flex: 1;
-  padding: 16px;
+  padding: 12px 14px;
+}
 
-  .material-icons {
-    margin-right: 16px;
-  }
+.collection {
+  margin-bottom: 10px;
+  border: 1px solid var(--brd-color);
+  border-radius: var(--radius);
+  background-color: var(--bg-light-color);
+}
+
+.collection > h2,
+.folder > h3,
+.request > h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.collection > h2 {
+  font-size: 14px;
 }
 
 .folder {
+  margin: 8px 0 0 14px;
+  padding-left: 12px;
   border-left: 1px solid var(--brd-color);
-  margin: 16px 0 0;
+}
+
+.folder > h3 {
+  font-size: 13px;
 }
 
 .request {
+  margin: 8px 0 0;
   border: 1px solid var(--brd-color);
-  border-radius: 8px;
-  margin: 16px 0 0;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-color);
+}
 
-  h4 {
-    margin: 8px 0;
-  }
+.request > h4 {
+  font-size: 12.5px;
 }
 
 .doc-desc {
-  color: var(--fg-light-color);
-  border-bottom: 1px dashed var(--brd-color);
   margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--brd-color);
+  color: var(--fg-light-color);
+  font-size: 12px;
 
   &:last-child {
-    border-bottom: none;
+    border-bottom: 0;
   }
+}
+
+.pw-icon {
+  flex: 0 0 auto;
+  margin-right: 2px;
+  color: var(--fg-light-color);
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  word-break: break-all;
+}
+
+.doc-desc span {
+  min-width: 0;
 }
 </style>
 

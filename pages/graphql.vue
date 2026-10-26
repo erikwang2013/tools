@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="page graphql-page">
     <div class="content">
       <div class="page-columns inner-left">
         <pw-section class="blue" :label="$t('endpoint')" ref="endpoint">
@@ -19,7 +19,7 @@
                 <label for="get" class="hide-on-small-screen">&nbsp;</label>
                 <button id="get" name="get" @click="getSchema">
                   {{ $t("get_schema") }}
-                  <span><i class="material-icons">send</i></span>
+                  <span><pw-icon name="send" /></span>
                 </button>
               </li>
             </div>
@@ -33,7 +33,7 @@
                 <label for="headerList">{{ $t("header_list") }}</label>
                 <div>
                   <button class="icon" @click="headers = []" v-tooltip.bottom="$t('clear')">
-                    <i class="material-icons">clear_all</i>
+                    <pw-icon name="clear_all" />
                   </button>
                 </div>
               </div>
@@ -85,7 +85,7 @@
                   v-tooltip.bottom="$t('delete')"
                   id="header"
                 >
-                  <i class="material-icons">delete</i>
+                  <pw-icon name="delete" />
                 </button>
               </li>
             </div>
@@ -93,7 +93,7 @@
           <ul>
             <li>
               <button class="icon" @click="addRequestHeader">
-                <i class="material-icons">add</i>
+                <pw-icon name="add" />
                 <span>{{ $t("add_new") }}</span>
               </button>
             </li>
@@ -112,9 +112,7 @@
                   content: !expandResponse ? $t('expand_response') : $t('collapse_response'),
                 }"
               >
-                <i class="material-icons">
-                  {{ !expandResponse ? "unfold_more" : "unfold_less" }}
-                </i>
+                <pw-icon :name="!expandResponse ? 'unfold-more' : 'unfold-less'" />
               </button>
               <button
                 class="icon"
@@ -122,7 +120,7 @@
                 ref="downloadResponse"
                 v-tooltip="$t('download_file')"
               >
-                <i class="material-icons">get_app</i>
+                <pw-icon name="download" />
               </button>
               <button
                 class="icon"
@@ -130,7 +128,7 @@
                 @click="copySchema"
                 v-tooltip="$t('copy_schema')"
               >
-                <i class="material-icons">file_copy</i>
+                <pw-icon name="file-copy" />
               </button>
             </div>
           </div>
@@ -168,7 +166,7 @@
                 @click="runQuery()"
                 v-tooltip.bottom="`${$t('run_query')} (${getSpecialKey()}-Enter)`"
               >
-                <i class="material-icons">play_arrow</i>
+                <pw-icon name="play-arrow" />
               </button>
               <button
                 class="icon"
@@ -176,14 +174,14 @@
                 ref="copyQueryButton"
                 v-tooltip="$t('copy_query')"
               >
-                <i class="material-icons">file_copy</i>
+                <pw-icon name="file-copy" />
               </button>
               <button
                 class="icon"
                 @click="doPrettifyQuery"
                 v-tooltip="`${$t('prettify_query')} (${getSpecialKey()}-P)`"
               >
-                <i class="material-icons">photo_filter</i>
+                <pw-icon name="photo-filter" />
               </button>
             </div>
           </div>
@@ -227,7 +225,7 @@
                 ref="copyResponseButton"
                 v-tooltip="$t('copy_response')"
               >
-                <i class="material-icons">file_copy</i>
+                <pw-icon name="file-copy" />
               </button>
             </div>
           </div>
@@ -317,12 +315,68 @@
 </template>
 
 <style scoped lang="scss">
-.gqlTabs {
-  max-height: calc(100vh - 186px);
+.graphql-page .content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+}
+
+.graphql-page .page-columns.inner-left {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  flex: 1;
+  align-items: start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.graphql-page .inner-right {
+  position: sticky;
+  top: calc(var(--topbar-height) + 20px);
+  flex: 0 0 320px;
+  width: 320px;
+  max-height: calc(100vh - var(--topbar-height) - 44px);
+  margin: 0;
   overflow: auto;
 }
+
+.graphql-page .page-columns.inner-left > .pw-section,
+.graphql-page .page-columns.inner-left > fieldset {
+  min-width: 0;
+}
+
+.gqlTabs {
+  max-height: calc(100vh - 240px);
+  overflow: auto;
+}
+
 .gqlRunQuery {
   margin-bottom: 12px;
+}
+
+@media (max-width: 1200px) {
+  .graphql-page .page-columns.inner-left {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .graphql-page .content {
+    flex-flow: column nowrap;
+  }
+
+  .graphql-page .inner-right {
+    position: static;
+    flex-basis: auto;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .gqlTabs {
+    max-height: none;
+  }
 }
 </style>
 
@@ -357,9 +411,9 @@ export default {
       mutationFields: [],
       subscriptionFields: [],
       gqlTypes: [],
-      copyButton: '<i class="material-icons">file_copy</i>',
-      downloadButton: '<i class="material-icons">get_app</i>',
-      doneButton: '<i class="material-icons">done</i>',
+      copyButton: "⧉",
+      downloadButton: "↓",
+      doneButton: "✓",
       expandResponse: false,
       responseBodyMaxLines: 16,
 

@@ -16,12 +16,16 @@
         <div>
           <li>
             <label for="connect" class="hide-on-small-screen">&nbsp;</label>
-            <button :disabled="!urlValid" id="connect" name="connect" @click="toggleConnection">
+            <button
+              :class="{ secondary: connectionState }"
+              :disabled="!urlValid"
+              id="connect"
+              name="connect"
+              @click="toggleConnection"
+            >
               {{ !connectionState ? $t("connect") : $t("disconnect") }}
               <span>
-                <i class="material-icons">
-                  {{ !connectionState ? "sync" : "sync_disabled" }}
-                </i>
+                <pw-icon :name="!connectionState ? 'sync' : 'sync-disabled'" />
               </span>
             </button>
           </li>
@@ -65,7 +69,7 @@
             <button id="send" name="send" :disabled="!connectionState" @click="sendMessage">
               {{ $t("send") }}
               <span>
-                <i class="material-icons">send</i>
+                <pw-icon name="send" />
               </span>
             </button>
           </li>
@@ -130,9 +134,7 @@ export default {
               ts: new Date().toLocaleTimeString(),
             },
           ]
-          this.$toast.success(this.$t("connected"), {
-            icon: "sync",
-          })
+          this.$toast.success(this.$t("connected"), {})
         })
         this.io.on("message", data => {
           this.communication.log.push({
@@ -155,18 +157,14 @@ export default {
           this.communication.log.push({
             payload: this.$t("disconnected_from", { name: this.url }),
             source: "info",
-            color: "#ff5555",
+            color: "#dc2626",
             ts: new Date().toLocaleTimeString(),
           })
-          this.$toast.error(this.$t("disconnected"), {
-            icon: "sync_disabled",
-          })
+          this.$toast.error(this.$t("disconnected"), {})
         })
       } catch (ex) {
         this.handleError(ex)
-        this.$toast.error(this.$t("something_went_wrong"), {
-          icon: "error",
-        })
+        this.$toast.error(this.$t("something_went_wrong"), {})
       }
     },
     disconnect() {
@@ -181,14 +179,14 @@ export default {
       this.communication.log.push({
         payload: this.$t("error_occurred"),
         source: "info",
-        color: "#ff5555",
+        color: "#dc2626",
         ts: new Date().toLocaleTimeString(),
       })
       if (error !== null)
         this.communication.log.push({
           payload: error,
           source: "info",
-          color: "#ff5555",
+          color: "#dc2626",
           ts: new Date().toLocaleTimeString(),
         })
     },

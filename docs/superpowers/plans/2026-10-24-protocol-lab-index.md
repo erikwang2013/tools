@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 在 postwoman.erik.xyz 上新增 39 个协议/能力条目，同时保持现有协议、静态部署和构建链不变。
+**Goal:** 在 tools.erik.xyz 上新增 39 个协议/能力条目，同时保持现有协议、静态部署和构建链不变。
 
 **Architecture:** 静态 Nuxt 2 页面 + 只监听 `127.0.0.1` 的本地 Agent。页面通过 WebSocket 驱动 Agent；浏览器原生协议直接实现，HTTP 家族复用现有请求链路。所有新条目共用一个注册表驱动的实验台。
 
@@ -225,7 +225,7 @@ npx cypress run                   # 现有 e2e + 新增 e2e
 
 - Agent 构建与运行只用 Node 18；不引入 Node 20 专有 API。
 - Agent 只绑定 `127.0.0.1`；默认端口 3567；token 每次启动随机生成。
-- 默认允许的 Origin：`https://postwoman.erik.xyz`、`http://localhost:3000`、`http://127.0.0.1:3000`。其他 Origin 一律拒绝。
+- 默认允许的 Origin：`https://tools.erik.xyz`、`http://localhost:3000`、`http://127.0.0.1:3000`。其他 Origin 一律拒绝。
 - 单条消息 16 MiB；每页最多 32 个会话；`open` 超时 30 秒；已建立会话不因空闲回收；ping 30 秒、60 秒无 pong 回收。
 - 页面永远不向 Agent 传文件路径；文件在浏览器内读取后按字节发送。
 - MCP stdio 只能启动 `agent/config.json` 中已配置的 server；页面只能选择，不能提交命令。

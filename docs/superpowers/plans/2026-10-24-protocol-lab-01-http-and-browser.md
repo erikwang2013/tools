@@ -65,21 +65,21 @@ test("proxies a request with token and CORS", async () => {
   const upstream = http.createServer((req, res) => { res.writeHead(201, { "content-type": "text/plain" }); res.end("ok") })
   await new Promise(r => upstream.listen(0, "127.0.0.1", r))
   const target = `http://127.0.0.1:${upstream.address().port}/x`
-  const srv = await createAgentServer({ port: 0, token: "t", origins: ["https://postwoman.erik.xyz"], adapters: {} })
+  const srv = await createAgentServer({ port: 0, token: "t", origins: ["https://tools.erik.xyz"], adapters: {} })
   const base = `http://127.0.0.1:${srv.port}`
 
   const res = await fetch(`${base}/proxy/http`, {
     method: "POST",
-    headers: { "content-type": "application/json", "x-agent-token": "t", origin: "https://postwoman.erik.xyz" },
+    headers: { "content-type": "application/json", "x-agent-token": "t", origin: "https://tools.erik.xyz" },
     body: JSON.stringify({ method: "GET", url: target, headers: {} }),
   })
   assert.equal(res.status, 200)
-  assert.equal(res.headers.get("access-control-allow-origin"), "https://postwoman.erik.xyz")
+  assert.equal(res.headers.get("access-control-allow-origin"), "https://tools.erik.xyz")
   assert.deepEqual(await res.json(), { status: 201, headers: { "content-type": "text/plain" }, data: "ok", encoding: "utf8" })
 
   const denied = await fetch(`${base}/proxy/http`, {
     method: "POST",
-    headers: { "content-type": "application/json", "x-agent-token": "bad", origin: "https://postwoman.erik.xyz" },
+    headers: { "content-type": "application/json", "x-agent-token": "bad", origin: "https://tools.erik.xyz" },
     body: JSON.stringify({ method: "GET", url: target, headers: {} }),
   })
   assert.equal(denied.status, 401)

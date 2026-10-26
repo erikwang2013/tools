@@ -5,7 +5,7 @@
 
 ## 1. 目标
 
-postwoman.erik.xyz 是一个纯浏览器端 API 调试工具（Nuxt 2 静态站，nginx 托管）。
+tools.erik.xyz 是一个纯浏览器端 API 调试工具（Nuxt 2 静态站，nginx 托管）。
 现有协议：REST/HTTP、GraphQL、WebSocket（文本）、SSE、Socket.IO、MQTT。
 
 需求：把用户列出的、尚未支持的协议全部加上；已有协议保持不动。
@@ -287,7 +287,7 @@ Vuex store 结构、构建链、Dockerfile、nginx.conf。
 ## 8. 安全边界
 
 - Agent 只绑 `127.0.0.1`；每次启动生成随机 token；页面首条消息必须携带 token。
-- WebSocket 升级时校验 `Origin`：只允许 `https://postwoman.erik.xyz` 与本地开发地址。
+- WebSocket 升级时校验 `Origin`：只允许 `https://tools.erik.xyz` 与本地开发地址。
   这阻止任意网页驱动用户本机的 Agent。
 - 页面永远不向 Agent 传文件路径；文件由浏览器读取后按字节发送。
 - MCP stdio 命令来自 Agent 配置，页面只能选择，不能新增。

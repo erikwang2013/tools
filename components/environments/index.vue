@@ -14,7 +14,7 @@
     <div class="flex-wrap">
       <div>
         <button class="icon" @click="displayModalAdd(true)">
-          <i class="material-icons">add</i>
+          <pw-icon name="add" />
           <span>{{ $t("new") }}</span>
         </button>
       </div>
@@ -25,7 +25,7 @@
       </div>
     </div>
     <p v-if="environments.length === 0" class="info">
-      Create new environment
+      {{ $t("create_new_environment") }}
     </p>
     <virtual-list
       class="virtual-list"
@@ -43,7 +43,7 @@
           />
         </li>
         <li v-if="environments.length === 0">
-          <label>Environments are empty</label>
+          <label>{{ $t("environments_empty") }}</label>
         </li>
       </ul>
     </virtual-list>
@@ -52,12 +52,13 @@
 
 <style scoped lang="scss">
 .virtual-list {
-  max-height: calc(100vh - 241px);
+  max-height: calc(100vh - 250px);
 }
 
 ul {
   display: flex;
   flex-direction: column;
+  margin: 0;
 }
 </style>
 

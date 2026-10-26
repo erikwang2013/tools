@@ -19,7 +19,7 @@
 </style>
 
 <script>
-const DEFAULT_THEME = "twilight"
+const DEFAULT_THEME = "chrome"
 
 import ace from "ace-builds"
 import "ace-builds/webpack-resolver"

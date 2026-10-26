@@ -4,25 +4,17 @@
       <span v-if="version.name" class="mono">
         <a
           class="footer-link"
-          :href="'https://github.com/liyasthomas/postwoman/releases/tag/' + version.name"
+          :href="'https://github.com/erikwang2013/tools/releases/tag/' + version.name"
           target="_blank"
           rel="noopener"
           v-tooltip="'GitHub'"
         >
           {{ version.name }}
         </a>
-        <a
-          class="footer-link hide-on-small-screen"
-          href="https://www.netlify.com"
-          target="_blank"
-          rel="noopener"
-        >
-          Powered by Netlify
-        </a>
         <!-- <span v-if="version.hash">
           -
           <a
-            :href="'https://github.com/liyasthomas/postwoman/commit/' + version.hash"
+            :href="'https://github.com/erikwang2013/tools/commit/' + version.hash"
             target="_blank"
             rel="noopener"
           >{{version.hash}}</a>
@@ -30,19 +22,19 @@
         <!-- <span v-if="version.variant">({{version.variant}})</span> -->
       </span>
       <span>
-        <a href="https://liyasthomas.web.app" target="_blank" rel="noopener">
-          <button class="icon" v-tooltip="'Liyas Thomas'">
-            🦄
-          </button>
-        </a>
-        <a href="mailto:liyascthomas@gmail.com" target="_blank" rel="noopener">
-          <button class="icon" v-tooltip="$t('contact_us')">
-            <i class="material-icons">email</i>
-          </button>
+        <a
+          class="footer-link"
+          href="https://github.com/erikwang2013/tools"
+          target="_blank"
+          rel="noopener"
+          v-tooltip="'GitHub'"
+        >
+          <pw-icon name="github" />
+          GitHub
         </a>
         <v-popover>
           <button class="icon" v-tooltip="$t('choose_language')">
-            <i class="material-icons">translate</i>
+            <pw-icon name="translate" />
           </button>
           <template slot="popover">
             <div v-for="locale in availableLocales" :key="locale.code">
@@ -69,6 +61,12 @@
         <span>{{ qr.label }}赞赏</span>
       </button>
     </div>
+    <div class="footer-legal">
+      <span>备案信息：</span>
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">
+        粤ICP备2020136226号
+      </a>
+    </div>
     <div class="footer-info" id="busuanzi">
       <span id="busuanzi_container_site_pv">
         本站总访问量 <b id="busuanzi_value_site_pv">0</b> 次 👀
@@ -86,7 +84,7 @@
             <div class="flex-wrap">
               <h3 class="title">{{ donatePreview.label }}赞赏</h3>
               <button ref="donateClose" class="icon" @click="closeDonate">
-                <i class="material-icons">close</i>
+                <pw-icon name="close" />
               </button>
             </div>
           </li>
@@ -153,6 +151,23 @@
 
   span {
     margin-left: 0;
+  }
+}
+
+.footer-legal {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 8px;
+  color: var(--fg-light-color);
+  font-size: 11.5px;
+
+  a {
+    color: var(--fg-light-color);
+  }
+
+  a:hover {
+    color: var(--fg-color);
   }
 }
 

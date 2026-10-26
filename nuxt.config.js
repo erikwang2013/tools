@@ -2,11 +2,15 @@
 // TODO: Use these when rendering the pages (rather than just for head/meta tags...)
 export const meta = {
   name: "Postwoman",
-  shortDescription: "免费快速的在线 API 调试工具",
+  shortDescription: "免费快速的 API 调试与多协议工作台",
   description:
-    "Postwoman 是在线 API 请求构建与调试工具，支持 REST、GraphQL、WebSocket、SSE、Socket.IO。免费、快速、开源，是 Postman 的网页替代方案。",
+    "Postwoman 是本地优先的在线 API 请求构建与调试工具，支持 REST、GraphQL、WebSocket、SSE、Socket.IO、MQTT，以及 TCP/UDP、SOAP、gRPC、Kafka、Modbus 等 39 种协议。免费、随开随用，是 Postman 的网页替代方案。",
 }
-const siteUrl = "https://postwoman.erik.xyz"
+const {
+  SITE_URL: siteUrl,
+  ROUTES: seoRoutes,
+  GUIDE_HOWTO,
+} = require("./seo/routes")
 const defaultLocale = "cn"
 const locales = [
   {
@@ -82,7 +86,7 @@ const localeAlternates = locales.map(locale => ({
   hreflang: locale.iso,
   href: `${siteUrl}${locale.code === defaultLocale ? "/" : "/" + locale.code}`,
 }))
-const sitemapPages = ["", "/doc", "/graphql", "/realtime", "/settings", "/protocols"]
+const sitemapPages = ["", "/doc", "/graphql", "/realtime", "/settings", "/protocols", "/guide"]
 const sitemapRoutes = locales
   .map(locale => {
     const prefix = locale.code === defaultLocale ? "" : `/${locale.code}`
@@ -129,7 +133,7 @@ export default {
     },
   },
   head: {
-    title: `${meta.name} \u2022 ${meta.shortDescription}`,
+    title: `API 请求调试与多协议工作台 · ${meta.name}`,
     meta: [
       {
         charset: "utf-8",
@@ -147,7 +151,7 @@ export default {
       {
         name: "keywords",
         content:
-          "postwoman, API 调试, 在线 API 测试, API 请求构建器, 接口调试, 接口测试, postman 替代, REST, GraphQL, WebSocket, SSE, Socket.IO, api testing tool",
+          "postwoman, tools.erik.xyz, API 调试, 在线 API 测试, API 请求构建器, 接口调试, 接口测试, postman 替代, REST, GraphQL, WebSocket, SSE, Socket.IO, MQTT, TCP, UDP, SOAP, gRPC, Kafka, Modbus, OPC UA, 多协议调试",
       },
       {
         hid: "robots",
@@ -168,7 +172,7 @@ export default {
       },
       {
         itemprop: "image",
-        content: `${siteUrl}/logo.jpg`,
+        content: `${siteUrl}/icons/icon-512x512.png`,
       },
       // Add to homescreen for Chrome on Android. Fallback for PWA (handled by nuxt)
       {
@@ -207,24 +211,27 @@ export default {
         content: meta.name,
       },
       {
+        hid: "og:url",
         property: "og:url",
-        content: siteUrl,
+        content: `${siteUrl}/`,
       },
       {
         property: "og:type",
         content: "website",
       },
       {
+        hid: "og:title",
         property: "og:title",
-        content: `${meta.name} \u2022 ${meta.shortDescription}`,
+        content: `API 请求调试与多协议工作台 · ${meta.name}`,
       },
       {
+        hid: "og:description",
         property: "og:description",
         content: meta.description,
       },
       {
         property: "og:image",
-        content: `${siteUrl}/logo.jpg`,
+        content: `${siteUrl}/icons/icon-512x512.png`,
       },
       // Twitter
       {
@@ -232,31 +239,39 @@ export default {
         content: "summary_large_image",
       },
       {
-        name: "twitter:site",
-        content: "@liyasthomas",
-      },
-      {
-        name: "twitter:creator",
-        content: "@liyasthomas",
-      },
-      {
+        hid: "twitter:url",
         name: "twitter:url",
-        content: siteUrl,
+        content: `${siteUrl}/`,
       },
       {
+        hid: "twitter:title",
         name: "twitter:title",
-        content: `${meta.name} \u2022 ${meta.shortDescription}`,
+        content: `API 请求调试与多协议工作台 · ${meta.name}`,
       },
       {
+        hid: "twitter:description",
         name: "twitter:description",
         content: meta.description,
       },
       {
         name: "twitter:image",
-        content: `${siteUrl}/logo.jpg`,
+        content: `${siteUrl}/icons/icon-512x512.png`,
+      },
+      {
+        property: "og:image:alt",
+        content: "Postwoman — API 请求调试与多协议工作台",
+      },
+      {
+        name: "twitter:image:alt",
+        content: "Postwoman — API 请求调试与多协议工作台",
       },
     ],
     link: [
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: `${routerBase.router.base}icons/logo.svg`,
+      },
       {
         rel: "icon",
         type: "image/x-icon",
@@ -320,10 +335,19 @@ export default {
           description: meta.description,
           applicationCategory: "DeveloperApplication",
           operatingSystem: "Any",
+          browserRequirements: "Requires JavaScript",
+          image: `${siteUrl}/icons/icon-512x512.png`,
+          sameAs: ["https://github.com/erikwang2013/tools"],
+          featureList: [
+            "HTTP/REST and GraphQL debugging",
+            "WebSocket, SSE, Socket.IO and MQTT",
+            "39 protocol capabilities including TCP, UDP, SOAP, gRPC, Kafka, Modbus and OPC UA",
+            "Collections, history and environments",
+          ],
           offers: {
             "@type": "Offer",
             price: "0",
-            priceCurrency: "USD",
+            priceCurrency: "CNY",
           },
           inLanguage: ["zh-CN", "en"],
         },
@@ -348,11 +372,17 @@ export default {
   /*
    ** Global CSS
    */
-  css: ["~/assets/css/styles.scss", "~/assets/css/themes.scss", "~/assets/css/fonts.scss"],
+  css: [
+    "~/assets/css/styles.scss",
+    "~/assets/css/themes.scss",
+    "~/assets/css/fonts.scss",
+    "~/assets/css/design.scss",
+  ],
   /*
    ** Plugins to load before mounting the App
    */
   plugins: [
+    "~/plugins/icons",
     {
       src: "~/plugins/vuex-persist",
     },
@@ -389,14 +419,14 @@ export default {
       display: "standalone",
 
       lang: "zh-CN",
-      theme_color: "#202124",
-      background_color: "#202124",
+      theme_color: "#f6f6f4",
+      background_color: "#f6f6f4",
       start_url: `${routerBase.router.base}`,
     },
 
     meta: {
       description: meta.shortDescription,
-      theme_color: "#202124",
+      theme_color: "#f6f6f4",
       lang: false,
     },
 
@@ -476,6 +506,8 @@ export default {
     "generate:done"(generator) {
       const fs = require("fs")
       const path = require("path")
+      const escapeHtml = value => value.replace(/[&<>"]/g, c => `&#${c.charCodeAt(0)};`)
+      const escapeJson = value => JSON.stringify(value).replace(/</g, "\\u003c")
       const walk = dir => {
         for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
           const file = path.join(dir, entry.name)
@@ -493,10 +525,81 @@ export default {
             const rel = path.relative(generator.distPath, file).replace(/index\.html$/, "")
             const route = ("/" + rel.split(path.sep).join("/")).replace(/\/+$/, "") || "/"
             const canonical = `${siteUrl}${route === "/" ? "/" : route}`
+            const pagePath = route.replace(
+              new RegExp(`^/(${locales.map(l => l.code).join("|")})(?=/|$)`),
+              ""
+            ) || "/"
+            const seo = seoRoutes[pagePath] || seoRoutes["/"]
+            const pageTitle = `${seo.title} · Postwoman`
+            const description = escapeHtml(seo.description)
+            const breadcrumb = {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement:
+                pagePath === "/"
+                  ? [{ "@type": "ListItem", position: 1, name: "Postwoman", item: canonical }]
+                  : [
+                      { "@type": "ListItem", position: 1, name: "Postwoman", item: `${siteUrl}/` },
+                      { "@type": "ListItem", position: 2, name: seo.title, item: canonical },
+                    ],
+            }
+            const ld = `<script type="application/ld+json" data-hid="breadcrumb-ld-json">${escapeJson(
+              breadcrumb
+            )}</script>`
+            const howTo =
+              pagePath === "/guide"
+                ? `<script type="application/ld+json" data-hid="guide-howto-json">${escapeJson({
+                    "@context": "https://schema.org",
+                    "@type": "HowTo",
+                    name: GUIDE_HOWTO.name,
+                    description: seo.description,
+                    inLanguage: "zh-CN",
+                    step: GUIDE_HOWTO.steps.map((text, i) => ({
+                      "@type": "HowToStep",
+                      position: i + 1,
+                      text,
+                    })),
+                  })}</script>`
+                : ""
             html = html
+              .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(pageTitle)}</title>`)
+              .replace(
+                /(<meta[^>]*data-hid="description"[^>]*content=")[^"]*(")/,
+                `$1${description}$2`
+              )
+              .replace(
+                /(<meta[^>]*data-hid="og:title"[^>]*content=")[^"]*(")/,
+                `$1${escapeHtml(pageTitle)}$2`
+              )
+              .replace(
+                /(<meta[^>]*data-hid="og:description"[^>]*content=")[^"]*(")/,
+                `$1${description}$2`
+              )
+              .replace(
+                /(<meta[^>]*data-hid="twitter:title"[^>]*content=")[^"]*(")/,
+                `$1${escapeHtml(pageTitle)}$2`
+              )
+              .replace(
+                /(<meta[^>]*data-hid="twitter:description"[^>]*content=")[^"]*(")/,
+                `$1${description}$2`
+              )
               .replace(/(<link[^>]*data-hid="canonical"[^>]*href=")[^"]*(")/, `$1${canonical}$2`)
               .replace(/(<meta[^>]*property="og:url"[^>]*content=")[^"]*(")/, `$1${canonical}$2`)
               .replace(/(<meta[^>]*name="twitter:url"[^>]*content=")[^"]*(")/, `$1${canonical}$2`)
+            for (const l of locales) {
+              html = html.replace(
+                new RegExp(`(<link[^>]*data-hid="alternate-hreflang-${l.iso}"[^>]*href=")[^"]*(")`),
+                `$1${siteUrl}${l.code === defaultLocale ? "" : `/${l.code}`}${
+                  pagePath === "/" ? "/" : pagePath
+                }$2`
+              )
+            }
+            html = html
+              .replace(
+                /(<link[^>]*data-hid="alternate-hreflang-x-default"[^>]*href=")[^"]*(")/,
+                `$1${siteUrl}${pagePath === "/" ? "/" : pagePath}$2`
+              )
+              .replace("</head>", `${ld}${howTo}</head>`)
           }
 
           if (!/<html[^>]*\blang=/.test(html)) {

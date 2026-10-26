@@ -27,7 +27,7 @@ test("proxies a request with token and CORS", async () => {
   const srv = await createAgentServer({
     port: 0,
     token: "t",
-    origins: ["https://postwoman.erik.xyz"],
+    origins: ["https://tools.erik.xyz"],
     adapters: {},
   })
   const base = `http://127.0.0.1:${srv.port}`
@@ -37,12 +37,12 @@ test("proxies a request with token and CORS", async () => {
     headers: {
       "content-type": "application/json",
       "x-agent-token": "t",
-      origin: "https://postwoman.erik.xyz",
+      origin: "https://tools.erik.xyz",
     },
     body: JSON.stringify({ method: "GET", url: target, headers: {} }),
   })
   assert.equal(res.status, 200)
-  assert.equal(res.headers.get("access-control-allow-origin"), "https://postwoman.erik.xyz")
+  assert.equal(res.headers.get("access-control-allow-origin"), "https://tools.erik.xyz")
   const body = await res.json()
   assert.equal(body.status, 201)
   assert.equal(body.data, "ok")
@@ -53,7 +53,7 @@ test("proxies a request with token and CORS", async () => {
     headers: {
       "content-type": "application/json",
       "x-agent-token": "bad",
-      origin: "https://postwoman.erik.xyz",
+      origin: "https://tools.erik.xyz",
     },
     body: JSON.stringify({ method: "GET", url: target, headers: {} }),
   })
@@ -72,7 +72,7 @@ test("proxies a request with token and CORS", async () => {
 
   const preflight = await fetch(`${base}/proxy/http`, {
     method: "OPTIONS",
-    headers: { origin: "https://postwoman.erik.xyz" },
+    headers: { origin: "https://tools.erik.xyz" },
   })
   assert.equal(preflight.status, 204)
 

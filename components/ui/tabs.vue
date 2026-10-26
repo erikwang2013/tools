@@ -4,9 +4,7 @@
       <ul>
         <li v-for="tab in tabs" :class="{ 'is-active': tab.isActive }">
           <a :href="tab.href" @click="selectTab(tab)">
-            <i v-if="tab.icon" class="material-icons">
-              {{ tab.icon }}
-            </i>
+            <pw-icon v-if="tab.icon" :name="normalizeIcon(tab.icon)" />
             <span v-if="tab.label">{{ tab.label }}</span>
           </a>
         </li>
@@ -23,51 +21,65 @@
   display: flex;
   flex-flow: column nowrap;
   flex-grow: 1;
+}
 
-  .tabs {
-    -webkit-overflow-scrolling: touch;
-    display: flex;
-    white-space: nowrap;
-    overflow: auto;
+.tabs {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid var(--brd-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-light-color);
+  overflow-x: auto;
+}
 
-    ul {
-      display: flex;
-      width: 0px;
-    }
+.tabs ul {
+  display: flex;
+  flex-flow: row nowrap;
+  width: auto;
+  margin: 0;
+  gap: 2px;
+}
 
-    li {
-      display: inline-flex;
+.tabs li {
+  display: flex;
+}
 
-      a {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px 16px;
-        color: var(--fg-light-color);
-        border-radius: 4px;
-        cursor: pointer;
+.tabs a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 11px;
+  gap: 6px;
+  border-radius: 6px;
+  color: var(--fg-light-color);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
 
-        .material-icons {
-          margin-right: 8px;
-        }
+.tabs a:hover {
+  background: var(--bg-dark-color);
+  color: var(--fg-color);
+}
 
-        &:hover {
-          color: var(--fg-color);
-        }
-      }
+.tabs li.is-active a {
+  background: var(--ac-soft);
+  color: var(--ac-color);
+  font-weight: 600;
+}
 
-      &.is-active a {
-        background-color: var(--brd-color);
-        color: var(--fg-color);
-      }
-    }
-  }
+.tabs-details {
+  margin-top: 12px;
 }
 
 @media (max-width: 768px) {
-  ul,
-  ol {
-    flex-flow: row nowrap;
+  .tabs {
+    width: 100%;
   }
 }
 </style>
@@ -80,11 +92,16 @@ export default {
     }
   },
 
-  created() {
-    this.tabs = this.$children
+  mounted() {
+    this.tabs = this.$children.filter(
+      child => child.$options.props && ("label" in child.$options.props || "icon" in child.$options.props)
+    )
   },
 
   methods: {
+    normalizeIcon(name) {
+      return String(name).replace(/_/g, "-")
+    },
     selectTab({ id }) {
       this.tabs.forEach(tab => {
         tab.isActive = tab.id == id

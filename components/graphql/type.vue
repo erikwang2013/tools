@@ -16,17 +16,30 @@
 
 <style scoped lang="scss">
 .type-box {
-  padding: 16px;
-  margin: 4px 0;
+  padding: 12px;
+  margin: 0;
 }
 
 .type-desc {
-  color: var(--fg-light-color);
   margin-top: 4px;
+  color: var(--fg-light-color);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .type-title {
-  font-weight: 700;
+  color: var(--fg-color);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.type-box h5 {
+  margin: 12px 0 4px;
+  color: var(--fg-light-color);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }
 </style>
 

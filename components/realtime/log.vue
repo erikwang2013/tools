@@ -14,20 +14,20 @@
 
 <style scoped lang="scss">
 div.realtime-log {
-  margin: 4px;
-  padding: 8px 16px;
-  width: calc(100% - 8px);
-  border-radius: 8px;
-  background-color: var(--bg-dark-color);
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--brd-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-color);
   color: var(--fg-color);
-  height: 256px;
+  height: 240px;
   overflow: auto;
+  font-family: var(--font-mono);
 
   &,
   span {
-    font-size: 16px;
-    font-family: "Roboto Mono", monospace;
-    font-weight: 400;
+    font-size: 12.5px;
+    line-height: 1.55;
   }
 
   span {

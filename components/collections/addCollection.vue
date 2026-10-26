@@ -7,7 +7,7 @@
             <h3 class="title">{{ $t("new_collection") }}</h3>
             <div>
               <button class="icon" @click="hideModal">
-                <i class="material-icons">close</i>
+                <pw-icon name="close" />
               </button>
             </div>
           </div>

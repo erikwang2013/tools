@@ -22,7 +22,7 @@ The agent prints the listening URL, the token and the allowed origins:
 ```
 Postwoman Agent listening on ws://127.0.0.1:3567/agent
 Token: 1f0c...<random hex>
-Allowed origins: https://postwoman.erik.xyz, http://localhost:3000, http://127.0.0.1:3000
+Allowed origins: https://tools.erik.xyz, http://localhost:3000, http://127.0.0.1:3000
 Press Ctrl+C to stop.
 ```
 
@@ -52,7 +52,7 @@ Keep the token private: anyone on this machine who has it can open sockets throu
 ## Origins
 
 Only browser pages served from an allowed Origin may connect. The default allowlist is
-`https://postwoman.erik.xyz`, `http://localhost:3000` and `http://127.0.0.1:3000`, and it
+`https://tools.erik.xyz`, `http://localhost:3000` and `http://127.0.0.1:3000`, and it
 always stays allowed. `--origin` adds to it (repeat the flag for several); a dev server on
 another port needs `--origin http://localhost:<port>`. Matching is exact (scheme, host and
 port), and duplicates are ignored.

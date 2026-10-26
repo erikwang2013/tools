@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="page settings-page">
     <pw-section class="cyan" :label="$t('theme')" ref="theme">
       <ul>
         <li>
@@ -7,7 +7,7 @@
           <div class="backgrounds">
             <span :key="theme.class" @click="applyTheme(theme)" v-for="theme in themes">
               <swatch
-                :active="settings.THEME_CLASS === theme.class"
+                :active="(settings.THEME_CLASS || '') === theme.class"
                 :class="{ vibrant: theme.vibrant }"
                 :color="theme.color"
                 :name="theme.name"
@@ -27,7 +27,7 @@
               v-for="entry in colors"
             >
               <swatch
-                :active="settings.THEME_COLOR === entry.color.toUpperCase()"
+                :active="(settings.THEME_COLOR || '#4F46E5') === entry.color.toUpperCase()"
                 :class="{ vibrant: entry.vibrant }"
                 :color="entry.color"
                 :name="entry.name"
@@ -90,15 +90,11 @@
                 {{ settings.PROXY_ENABLED ? $t("enabled") : $t("disabled") }}
               </pw-toggle>
             </span>
-            <a
-              href="https://github.com/liyasthomas/postwoman/wiki/Proxy"
-              target="_blank"
-              rel="noopener"
-            >
-              <button class="icon" v-tooltip="$t('wiki')">
-                <i class="material-icons">help</i>
+            <nuxt-link :to="localePath('guide')" v-tooltip="$t('guide')">
+              <button class="icon">
+                <pw-icon name="help" />
               </button>
-            </a>
+            </nuxt-link>
           </div>
         </li>
       </ul>
@@ -107,7 +103,7 @@
           <div class="flex-wrap">
             <label for="url">{{ $t("url") }}</label>
             <button class="icon" @click="resetProxy" v-tooltip.bottom="$t('reset_default')">
-              <i class="material-icons">clear_all</i>
+              <pw-icon name="clear_all" />
             </button>
           </div>
           <input
@@ -145,7 +141,11 @@
             <button @click="connectAgent" :disabled="agentBusy || agentStatus === 'connected'">
               {{ $t("agent_connect") }}
             </button>
-            <button @click="disconnectAgent" :disabled="agentStatus !== 'connected'">
+            <button
+              class="secondary"
+              @click="disconnectAgent"
+              :disabled="agentStatus !== 'connected'"
+            >
               {{ $t("agent_disconnect") }}
             </button>
             <span class="agent-status" :class="agentStatus">{{ $t(agentStatus) }}</span>
@@ -162,23 +162,43 @@
 </template>
 
 <style scoped lang="scss">
+.settings-page {
+  max-width: 980px;
+}
+
 .agent-status {
   margin-left: 8px;
   color: var(--fg-light-color);
+  font-size: 12.5px;
 
   &.connected {
-    color: #50fa7b;
+    color: var(--success-color);
   }
 
   &.error {
-    color: var(--err-color);
+    color: #dc2626;
   }
 }
 
 .agent-hint {
   margin: 0;
   color: var(--fg-light-color);
-  font-size: 14px;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.backgrounds,
+.colors {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.backgrounds > span,
+.colors > span {
+  display: inline-flex;
 }
 </style>
 
@@ -199,21 +219,20 @@ export default {
       //        set the relevant values.
       themes: [
         {
-          color: "#202124",
-          name: this.$t("kinda_dark"),
+          color: "#f6f6f4",
+          name: this.$t("light"),
           class: "",
+          aceEditor: "chrome",
+        },
+        {
+          color: "#0c0c0e",
+          name: this.$t("dark"),
+          class: "dark",
           aceEditor: "twilight",
         },
         {
-          color: "#ffffff",
-          name: this.$t("clearly_white"),
-          vibrant: true,
-          class: "light",
-          aceEditor: "iplastic",
-        },
-        {
           color: "#000000",
-          name: this.$t("just_black"),
+          name: this.$t("midnight"),
           class: "black",
           aceEditor: "vibrant_ink",
         },
@@ -223,53 +242,18 @@ export default {
           vibrant: window.matchMedia("(prefers-color-scheme: light)").matches,
           class: "auto",
           aceEditor: window.matchMedia("(prefers-color-scheme: light)").matches
-            ? "iplastic"
+            ? "chrome"
             : "twilight",
         },
       ],
       // You can define a new color here! It will simply store the color value.
       colors: [
-        // If the color is vibrant, black is used as the active foreground color.
-        {
-          color: "#50fa7b",
-          name: this.$t("green"),
-          vibrant: true,
-        },
-        {
-          color: "#f1fa8c",
-          name: this.$t("yellow"),
-          vibrant: true,
-        },
-        {
-          color: "#ff79c6",
-          name: this.$t("pink"),
-          vibrant: true,
-        },
-        {
-          color: "#ff5555",
-          name: this.$t("red"),
-          vibrant: false,
-        },
-        {
-          color: "#bd93f9",
-          name: this.$t("purple"),
-          vibrant: true,
-        },
-        {
-          color: "#ffb86c",
-          name: this.$t("orange"),
-          vibrant: true,
-        },
-        {
-          color: "#8be9fd",
-          name: this.$t("cyan"),
-          vibrant: true,
-        },
-        {
-          color: "#57b5f9",
-          name: this.$t("blue"),
-          vibrant: false,
-        },
+        { color: "#4f46e5", name: this.$t("indigo"), vibrant: false },
+        { color: "#0f766e", name: this.$t("teal"), vibrant: false },
+        { color: "#b45309", name: this.$t("amber"), vibrant: false },
+        { color: "#be123c", name: this.$t("rose"), vibrant: false },
+        { color: "#7c3aed", name: this.$t("violet"), vibrant: false },
+        { color: "#475569", name: this.$t("slate"), vibrant: false },
       ],
 
       settings: {
@@ -281,7 +265,7 @@ export default {
         THEME_CLASS: "",
         THEME_COLOR: "",
         THEME_TAB_COLOR: "",
-        THEME_COLOR_VIBRANT: true,
+        THEME_COLOR_VIBRANT: false,
 
         FRAME_COLORS_ENABLED: this.$store.state.postwoman.settings.FRAME_COLORS_ENABLED || false,
         PROXY_ENABLED: this.$store.state.postwoman.settings.PROXY_ENABLED || false,
@@ -293,7 +277,7 @@ export default {
             : true,
       },
 
-      doneButton: '<i class="material-icons">done</i>',
+      doneButton: "✓",
 
       agentUrl: "ws://127.0.0.1:3567/agent",
       agentToken: "",
@@ -314,8 +298,11 @@ export default {
     applyTheme({ class: name, color, aceEditor }) {
       this.applySetting("THEME_CLASS", name)
       this.applySetting("THEME_ACE_EDITOR", aceEditor)
-      document.querySelector("meta[name=theme-color]").setAttribute("content", color)
-      this.applySetting("THEME_TAB_COLOR", color)
+      const tabColor = color.startsWith("var(")
+        ? window.getComputedStyle(document.documentElement).getPropertyValue("--ac-color").trim()
+        : color
+      document.querySelector("meta[name=theme-color]").setAttribute("content", tabColor)
+      this.applySetting("THEME_TAB_COLOR", tabColor)
       document.documentElement.className = name
     },
     setActiveColor(color, vibrant) {
@@ -347,10 +334,8 @@ export default {
     resetProxy({ target }) {
       this.settings.PROXY_URL = ""
       target.innerHTML = this.doneButton
-      this.$toast.info(this.$t("cleared"), {
-        icon: "clear_all",
-      })
-      setTimeout(() => (target.innerHTML = '<i class="material-icons">clear_all</i>'), 1000)
+      this.$toast.info(this.$t("cleared"), {})
+      setTimeout(() => (target.innerHTML = "↺"), 1000)
     },
     async connectAgent() {
       try {

@@ -179,7 +179,7 @@ already in the agent's Origin allowlist. (On this development machine the toolch
    `curl -i -H "Connection: Upgrade" -H "Upgrade: websocket" -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==" -H "Origin: http://evil.example" http://127.0.0.1:3567/agent`
    responds `HTTP/1.1 403 Forbidden`.
 8. **Local Network Access (non-loopback page).** LNA prompts only when the page origin is not
-   loopback. Use a non-loopback origin, for example the deployed `https://postwoman.erik.xyz`
+   loopback. Use a non-loopback origin, for example the deployed `https://tools.erik.xyz`
    (already in the default allowlist), or serve the app from another origin and add it with
    `--origin <origin>`. On the first connect Chrome/Edge asks for Local Network Access (Chrome 145+
    files it in site settings under **Apps on device → Local Network**); choosing Allow connects. If
@@ -199,7 +199,7 @@ already in the agent's Origin allowlist. (On this development machine the toolch
 Browsers may gate a page's request to the loopback agent with **Local Network Access** (LNA). The
 permission applies when the requesting page origin is not itself loopback: a page served from
 `localhost` or `127.0.0.1` is in the same address space as the agent and is normally exempt, while a
-non-loopback page origin (for example the deployed `https://postwoman.erik.xyz`) can trigger the
+non-loopback page origin (for example the deployed `https://tools.erik.xyz`) can trigger the
 check.
 
 - **Chrome / Edge** ask for Local Network Access on the first connection from a non-loopback origin.

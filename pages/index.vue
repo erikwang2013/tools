@@ -1,22 +1,19 @@
 <template>
-  <div class="page">
+  <div class="page request-page">
     <div class="content">
       <div class="page-columns inner-left">
+        <div class="request-pane">
         <pw-section v-if="showPreRequestScript" class="orange" label="Pre-Request" ref="preRequest">
           <ul>
             <li>
               <div class="flex-wrap">
                 <label for="generatedCode">{{ $t("javascript_code") }}</label>
                 <div>
-                  <a
-                    href="https://github.com/liyasthomas/postwoman/wiki/Pre-Request-Scripts"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    <button class="icon" v-tooltip="$t('wiki')">
-                      <i class="material-icons">help</i>
+                  <nuxt-link :to="localePath('guide')" v-tooltip="$t('guide')">
+                    <button class="icon">
+                      <pw-icon name="help" />
                     </button>
-                  </a>
+                  </nuxt-link>
                 </div>
               </div>
               <Editor
@@ -194,7 +191,7 @@
                 <button :disabled="!isValidURL" @click="sendRequest" id="send" ref="sendButton">
                   {{ $t("send") }}
                   <span>
-                    <i class="material-icons">send</i>
+                    <pw-icon name="send" />
                   </span>
                 </button>
               </li>
@@ -236,7 +233,7 @@
                           files.length === 0 ? $t('upload_file') : filenames.replace('<br/>', '')
                         "
                       >
-                        <i class="material-icons">attach_file</i>
+                        <pw-icon name="attach_file" />
                         <span>
                           {{
                             files.length === 0
@@ -261,7 +258,7 @@
                         @click="$refs.payload.click()"
                         v-tooltip="$t('import_json')"
                       >
-                        <i class="material-icons">post_add</i>
+                        <pw-icon name="post_add" />
                       </button>
                     </label>
                     <input ref="payload" name="payload" type="file" @change="uploadPayload" />
@@ -322,7 +319,7 @@
                       v-tooltip.bottom="$t('delete')"
                       id="delParam"
                     >
-                      <i class="material-icons">delete</i>
+                      <pw-icon name="delete" />
                     </button>
                   </li>
                 </div>
@@ -330,7 +327,7 @@
               <ul>
                 <li>
                   <button class="icon" @click="addRequestBodyParam" name="addrequest">
-                    <i class="material-icons">add</i>
+                    <pw-icon name="add" />
                     <span>{{ $t("add_new") }}</span>
                   </button>
                 </li>
@@ -373,7 +370,7 @@
                 @click="showModal = true"
                 v-tooltip.bottom="$t('import_curl')"
               >
-                <i class="material-icons">import_export</i>
+                <pw-icon name="import_export" />
               </button>
               <button
                 class="icon"
@@ -384,7 +381,7 @@
                   content: isHidden ? $t('show_code') : $t('hide_code'),
                 }"
               >
-                <i class="material-icons">code</i>
+                <pw-icon name="code" />
               </button>
               <button
                 class="icon"
@@ -396,16 +393,12 @@
                 }"
                 @click="showPreRequestScript = !showPreRequestScript"
               >
-                <i
-                  class="material-icons"
-                  :class="showPreRequestScript"
+                <pw-icon
                   v-if="!showPreRequestScript"
-                >
-                  playlist_add
-                </i>
-                <i class="material-icons" :class="showPreRequestScript" v-else>
-                  close
-                </i>
+                  :class="showPreRequestScript"
+                  name="playlist-add"
+                />
+                <pw-icon v-else :class="showPreRequestScript" name="close" />
               </button>
               <button
                 class="icon"
@@ -415,10 +408,12 @@
                 }"
                 @click="testsEnabled = !testsEnabled"
               >
-                <i class="material-icons" :class="testsEnabled" v-if="!testsEnabled">
-                  playlist_add_check
-                </i>
-                <i class="material-icons" :class="testsEnabled" v-else>close</i>
+                <pw-icon
+                  v-if="!testsEnabled"
+                  :class="testsEnabled"
+                  name="playlist-add-check"
+                />
+                <pw-icon v-else :class="testsEnabled" name="close" />
               </button>
             </span>
             <span>
@@ -430,8 +425,8 @@
                 :disabled="!isValidURL"
                 v-tooltip.bottom="$t('copy_request_link')"
               >
-                <i v-if="navigatorShare" class="material-icons">share</i>
-                <i v-else class="material-icons">file_copy</i>
+                <pw-icon v-if="navigatorShare" name="share" />
+                <pw-icon v-else name="file-copy" />
               </button>
               <button
                 class="icon"
@@ -441,7 +436,7 @@
                 :disabled="!isValidURL"
                 v-tooltip.bottom="$t('save_to_collections')"
               >
-                <i class="material-icons">save</i>
+                <pw-icon name="save" />
               </button>
               <button
                 class="icon"
@@ -449,7 +444,7 @@
                 v-tooltip.bottom="$t('clear_all')"
                 ref="clearAll"
               >
-                <i class="material-icons">clear_all</i>
+                <pw-icon name="clear_all" />
               </button>
             </span>
           </div>
@@ -461,15 +456,11 @@
               <div class="flex-wrap">
                 <label for="generatedCode">{{ $t("javascript_code") }}</label>
                 <div>
-                  <a
-                    href="https://github.com/liyasthomas/postwoman/wiki/Post-Requests-Tests"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    <button class="icon" v-tooltip="$t('wiki')">
-                      <i class="material-icons">help</i>
+                  <nuxt-link :to="localePath('guide')" v-tooltip="$t('guide')">
+                    <button class="icon">
+                      <pw-icon name="help" />
                     </button>
-                  </a>
+                  </nuxt-link>
                 </div>
               </div>
               <Editor
@@ -493,7 +484,7 @@
                       @click="clearContent('tests', $event)"
                       v-tooltip.bottom="$t('clear')"
                     >
-                      <i class="material-icons">clear_all</i>
+                      <pw-icon name="clear_all" />
                     </button>
                   </div>
                 </div>
@@ -503,9 +494,7 @@
                   </div>
                   <p v-else-if="testReport.result" class="flex-wrap info">
                     <span :class="testReport.styles.class">
-                      <i class="material-icons">
-                        {{ testReport.styles.icon }}
-                      </i>
+                      <pw-icon :name="testReport.styles.icon" />
                       <span>&nbsp; {{ testReport.result }}</span>
                       <span v-if="testReport.message">
                         <label>&nbsp; • &nbsp; {{ testReport.message }}</label>
@@ -533,7 +522,7 @@
                           @click="clearContent('auth', $event)"
                           v-tooltip.bottom="$t('clear')"
                         >
-                          <i class="material-icons">clear_all</i>
+                          <pw-icon name="clear_all" />
                         </button>
                       </div>
                     </div>
@@ -567,10 +556,8 @@
                         ref="switchVisibility"
                         @click="switchVisibility"
                       >
-                        <i class="material-icons" v-if="passwordFieldType === 'text'">visibility</i>
-                        <i class="material-icons" v-if="passwordFieldType !== 'text'"
-                          >visibility_off</i
-                        >
+                        <pw-icon v-if="passwordFieldType === 'text'" name="visibility" />
+                        <pw-icon v-if="passwordFieldType !== 'text'" name="visibility-off" />
                       </button>
                     </li>
                   </div>
@@ -585,7 +572,7 @@
                         @click="showTokenList = !showTokenList"
                         v-tooltip.bottom="$t('use_token')"
                       >
-                        <i class="material-icons">open_in_new</i>
+                        <pw-icon name="open_in_new" />
                       </button>
                       <button
                         v-if="auth === 'OAuth 2.0'"
@@ -593,7 +580,7 @@
                         @click="showTokenRequest = !showTokenRequest"
                         v-tooltip.bottom="$t('get_token')"
                       >
-                        <i class="material-icons">vpn_key</i>
+                        <pw-icon name="vpn_key" />
                       </button>
                     </div>
                   </li>
@@ -624,21 +611,21 @@
                           @click="showTokenRequestList = true"
                           v-tooltip.bottom="$t('manage_token_req')"
                         >
-                          <i class="material-icons">library_add</i>
+                          <pw-icon name="library_add" />
                         </button>
                         <button
                           class="icon"
                           @click="clearContent('access_token', $event)"
                           v-tooltip.bottom="$t('clear')"
                         >
-                          <i class="material-icons">clear_all</i>
+                          <pw-icon name="clear_all" />
                         </button>
                         <button
                           class="icon"
                           @click="showTokenRequest = false"
                           v-tooltip.bottom="$t('close')"
                         >
-                          <i class="material-icons">close</i>
+                          <pw-icon name="close" />
                         </button>
                       </div>
                     </div>
@@ -721,7 +708,7 @@
                 <ul>
                   <li>
                     <button class="icon" @click="handleAccessTokenRequest">
-                      <i class="material-icons">vpn_key</i>
+                      <pw-icon name="vpn_key" />
                       <span>{{ $t("request_token") }}</span>
                     </button>
                   </li>
@@ -741,7 +728,7 @@
                           @click="clearContent('headers', $event)"
                           v-tooltip.bottom="$t('clear')"
                         >
-                          <i class="material-icons">clear_all</i>
+                          <pw-icon name="clear_all" />
                         </button>
                       </div>
                     </div>
@@ -794,7 +781,7 @@
                         v-tooltip.bottom="$t('delete')"
                         id="header"
                       >
-                        <i class="material-icons">delete</i>
+                        <pw-icon name="delete" />
                       </button>
                     </li>
                   </div>
@@ -802,7 +789,7 @@
                 <ul>
                   <li>
                     <button class="icon" @click="addRequestHeader">
-                      <i class="material-icons">add</i>
+                      <pw-icon name="add" />
                       <span>{{ $t("add_new") }}</span>
                     </button>
                   </li>
@@ -831,7 +818,7 @@
                           @click="clearContent('parameters', $event)"
                           v-tooltip.bottom="$t('clear')"
                         >
-                          <i class="material-icons">clear_all</i>
+                          <pw-icon name="clear_all" />
                         </button>
                       </div>
                     </div>
@@ -881,7 +868,7 @@
                         v-tooltip.bottom="$t('delete')"
                         id="param"
                       >
-                        <i class="material-icons">delete</i>
+                        <pw-icon name="delete" />
                       </button>
                     </li>
                   </div>
@@ -889,7 +876,7 @@
                 <ul>
                   <li>
                     <button class="icon" @click="addRequestParam">
-                      <i class="material-icons">add</i>
+                      <pw-icon name="add" />
                       <span>{{ $t("add_new") }}</span>
                     </button>
                   </li>
@@ -914,6 +901,8 @@
           </div> -->
         </section>
 
+        </div>
+        <div class="response-pane">
         <pw-section class="purple" id="response" :label="$t('response')" ref="response">
           <ul>
             <li>
@@ -949,9 +938,7 @@
                       content: !expandResponse ? $t('expand_response') : $t('collapse_response'),
                     }"
                   >
-                    <i class="material-icons">
-                      {{ !expandResponse ? "unfold_more" : "unfold_less" }}
-                    </i>
+                    <pw-icon :name="!expandResponse ? 'unfold-more' : 'unfold-less'" />
                   </button>
                   <button
                     class="icon"
@@ -960,7 +947,7 @@
                     v-if="response.body"
                     v-tooltip="$t('download_file')"
                   >
-                    <i class="material-icons">get_app</i>
+                    <pw-icon name="get_app" />
                   </button>
                   <button
                     class="icon"
@@ -969,7 +956,7 @@
                     v-if="response.body"
                     v-tooltip="$t('copy_response')"
                   >
-                    <i class="material-icons">file_copy</i>
+                    <pw-icon name="file_copy" />
                   </button>
                 </div>
               </div>
@@ -997,9 +984,7 @@
               </div>
               <div class="align-right" v-if="response.body && responseType === 'text/html'">
                 <button class="icon" @click.prevent="togglePreview">
-                  <i class="material-icons">
-                    {{ !previewEnabled ? "visibility" : "visibility_off" }}
-                  </i>
+                  <pw-icon :name="!previewEnabled ? 'visibility' : 'visibility-off'" />
                   <span>
                     {{ previewEnabled ? $t("hide_preview") : $t("preview_html") }}
                   </span>
@@ -1008,6 +993,7 @@
             </li>
           </ul>
         </pw-section>
+        </div>
       </div>
 
       <aside v-if="activeSidebar" class="sticky-inner inner-right">
@@ -1043,7 +1029,7 @@
                 <h3 class="title">{{ $t("import_curl") }}</h3>
                 <div>
                   <button class="icon" @click="showModal = false">
-                    <i class="material-icons">close</i>
+                    <pw-icon name="close" />
                   </button>
                 </div>
               </div>
@@ -1085,7 +1071,7 @@
                 <h3 class="title">{{ $t("generate_code") }}</h3>
                 <div>
                   <button class="icon" @click="isHidden = true">
-                    <i class="material-icons">close</i>
+                    <pw-icon name="close" />
                   </button>
                 </div>
               </div>
@@ -1117,7 +1103,7 @@
                     ref="copyRequestCode"
                     v-tooltip="$t('copy_code')"
                   >
-                    <i class="material-icons">file_copy</i>
+                    <pw-icon name="file_copy" />
                   </button>
                 </div>
               </div>
@@ -1142,7 +1128,7 @@
                 <h3 class="title">{{ $t("manage_token") }}</h3>
                 <div>
                   <button class="icon" @click="showTokenList = false">
-                    <i class="material-icons">close</i>
+                    <pw-icon name="close" />
                   </button>
                 </div>
               </div>
@@ -1160,7 +1146,7 @@
                     @click="clearContent('tokens', $event)"
                     v-tooltip.bottom="$t('clear')"
                   >
-                    <i class="material-icons">clear_all</i>
+                    <pw-icon name="clear_all" />
                   </button>
                 </div>
               </div>
@@ -1189,7 +1175,7 @@
                   @click="useOAuthToken(token.value)"
                   v-tooltip.bottom="$t('use_token')"
                 >
-                  <i class="material-icons">input</i>
+                  <pw-icon name="input" />
                 </button>
               </li>
               <li>
@@ -1198,7 +1184,7 @@
                   @click="removeOAuthToken(index)"
                   v-tooltip.bottom="$t('delete')"
                 >
-                  <i class="material-icons">delete</i>
+                  <pw-icon name="delete" />
                 </button>
               </li>
             </div>
@@ -1218,7 +1204,7 @@
                 <h3 class="title">{{ $t("manage_token_req") }}</h3>
                 <div>
                   <button class="icon" @click="showTokenRequestList = false">
-                    <i class="material-icons">close</i>
+                    <pw-icon name="close" />
                   </button>
                 </div>
               </div>
@@ -1237,7 +1223,7 @@
                     @click="showTokenRequestList = false"
                     v-tooltip.bottom="$t('use_token_req')"
                   >
-                    <i class="material-icons">input</i>
+                    <pw-icon name="input" />
                   </button>
                   <button
                     :disabled="this.tokenReqs.length === 0"
@@ -1245,7 +1231,7 @@
                     @click="removeOAuthTokenReq"
                     v-tooltip.bottom="$t('delete')"
                   >
-                    <i class="material-icons">delete</i>
+                    <pw-icon name="delete" />
                   </button>
                 </div>
               </div>
@@ -1386,9 +1372,9 @@ export default {
       testScript: "// pw.expect('variable').toBe('value');",
       preRequestScript: "// pw.env.set('variable', 'value');",
       testReports: null,
-      copyButton: '<i class="material-icons">file_copy</i>',
-      downloadButton: '<i class="material-icons">get_app</i>',
-      doneButton: '<i class="material-icons">done</i>',
+      copyButton: "⧉",
+      downloadButton: "↓",
+      doneButton: "✓",
       isHidden: true,
       response: {
         status: "",
@@ -2548,7 +2534,7 @@ export default {
       this.$toast.info(this.$t("cleared"), {
         icon: "clear_all",
       })
-      setTimeout(() => (target.innerHTML = '<i class="material-icons">clear_all</i>'), 1000)
+      setTimeout(() => (target.innerHTML = "↺"), 1000)
     },
     saveRequest() {
       if (!this.checkCollections()) {

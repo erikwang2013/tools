@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="realtime-panel">
     <pw-section class="blue" :label="$t('request')" ref="request">
       <ul>
         <li>
@@ -15,12 +15,16 @@
         <div>
           <li>
             <label for="start" class="hide-on-small-screen">&nbsp;</label>
-            <button :disabled="!serverValid" id="start" name="start" @click="toggleSSEConnection">
+            <button
+              :class="{ secondary: connectionSSEState }"
+              :disabled="!serverValid"
+              id="start"
+              name="start"
+              @click="toggleSSEConnection"
+            >
               {{ !connectionSSEState ? $t("start") : $t("stop") }}
               <span>
-                <i class="material-icons">
-                  {{ !connectionSSEState ? "sync" : "sync_disabled" }}
-                </i>
+                <pw-icon :name="!connectionSSEState ? 'sync' : 'sync-disabled'" />
               </span>
             </button>
           </li>
@@ -92,9 +96,7 @@ export default {
                 ts: new Date().toLocaleTimeString(),
               },
             ]
-            this.$toast.success(this.$t("connected"), {
-              icon: "sync",
-            })
+            this.$toast.success(this.$t("connected"), {})
           }
           this.sse.onerror = event => {
             this.handleSSEError()
@@ -105,12 +107,10 @@ export default {
             this.events.log.push({
               payload: this.$t("disconnected_from", { name: this.server }),
               source: "info",
-              color: "#ff5555",
+              color: "#dc2626",
               ts: new Date().toLocaleTimeString(),
             })
-            this.$toast.error(this.$t("disconnected"), {
-              icon: "sync_disabled",
-            })
+            this.$toast.error(this.$t("disconnected"), {})
           }
           this.sse.onmessage = event => {
             this.events.log.push({
@@ -121,16 +121,14 @@ export default {
           }
         } catch (ex) {
           this.handleSSEError(ex)
-          this.$toast.error(this.$t("something_went_wrong"), {
-            icon: "error",
-          })
+          this.$toast.error(this.$t("something_went_wrong"), {})
         }
       } else {
         this.events.log = [
           {
             payload: this.$t("browser_support_sse"),
             source: "info",
-            color: "#ff5555",
+            color: "#dc2626",
             ts: new Date().toLocaleTimeString(),
           },
         ]
@@ -142,14 +140,14 @@ export default {
       this.events.log.push({
         payload: this.$t("error_occurred"),
         source: "info",
-        color: "#ff5555",
+        color: "#dc2626",
         ts: new Date().toLocaleTimeString(),
       })
       if (error !== null)
         this.events.log.push({
           payload: error,
           source: "info",
-          color: "#ff5555",
+          color: "#dc2626",
           ts: new Date().toLocaleTimeString(),
         })
     },
@@ -162,12 +160,10 @@ export default {
       this.events.log.push({
         payload: this.$t("disconnected_from", { name: this.server }),
         source: "info",
-        color: "#ff5555",
+        color: "#dc2626",
         ts: new Date().toLocaleTimeString(),
       })
-      this.$toast.error(this.$t("disconnected"), {
-        icon: "sync_disabled",
-      })
+      this.$toast.error(this.$t("disconnected"), {})
     },
   },
   beforeDestroy() {

@@ -9,10 +9,15 @@
         <div>
           <li>
             <label for="connect" class="hide-on-small-screen">&nbsp;</label>
-            <button id="connect" :disabled="!validUrl" @click="toggleConnection">
+            <button
+              id="connect"
+              :class="{ secondary: connectionState }"
+              :disabled="!validUrl"
+              @click="toggleConnection"
+            >
               {{ this.connectionState ? $t("disconnect") : $t("connect") }}
               <span>
-                <i class="material-icons">{{ !connectionState ? "sync" : "sync_disabled" }}</i>
+                <pw-icon :name="!connectionState ? 'sync' : 'sync-disabled'" />
               </span>
             </button>
           </li>
@@ -41,7 +46,7 @@
             <button id="publish" name="get" :disabled="!canpublish" @click="publish">
               {{ $t("mqtt_publish") }}
               <span>
-                <i class="material-icons">send</i>
+                <pw-icon name="send" />
               </span>
             </button>
           </li>
@@ -58,7 +63,7 @@
             <button id="subscribe" name="get" :disabled="!cansubscribe" @click="toggleSubscription">
               {{ subscriptionState ? $t("mqtt_unsubscribe") : $t("mqtt_subscribe") }}
               <span>
-                <i class="material-icons">{{ subscriptionState ? "sync_disabled" : "sync" }}</i>
+                <pw-icon :name="subscriptionState ? 'sync-disabled' : 'sync'" />
               </span>
             </button>
           </li>
@@ -140,7 +145,7 @@ export default {
       this.log.push({
         payload: this.$t("error_occurred"),
         source: "info",
-        color: "#ff5555",
+        color: "#dc2626",
         ts: new Date().toLocaleTimeString(),
       })
     },
@@ -153,9 +158,7 @@ export default {
         color: "var(--ac-color)",
         ts: new Date().toLocaleTimeString(),
       })
-      this.$toast.success(this.$t("connected"), {
-        icon: "sync",
-      })
+      this.$toast.success(this.$t("connected"), {})
     },
     onMessageArrived(message) {
       this.log.push({
@@ -179,7 +182,7 @@ export default {
       this.log.push({
         payload: this.$t("disconnected_from", { name: this.url }),
         source: "info",
-        color: "#ff5555",
+        color: "#dc2626",
         ts: new Date().toLocaleTimeString(),
       })
     },
@@ -187,13 +190,9 @@ export default {
       this.connecting = false
       this.connectionState = false
       if (this.manualDisconnect) {
-        this.$toast.error(this.$t("disconnected"), {
-          icon: "sync_disabled",
-        })
+        this.$toast.error(this.$t("disconnected"), {})
       } else {
-        this.$toast.error(this.$t("something_went_wrong"), {
-          icon: "error",
-        })
+        this.$toast.error(this.$t("something_went_wrong"), {})
       }
       this.manualDisconnect = false
       this.subscriptionState = false
@@ -213,7 +212,7 @@ export default {
             this.$t("error_occurred") +
             `while publishing msg: ${this.msg} to topic:  ${this.pub_topic}`,
           source: "info",
-          color: "#ff5555",
+          color: "#dc2626",
           ts: new Date().toLocaleTimeString(),
         })
       }
@@ -235,7 +234,7 @@ export default {
         this.log.push({
           payload: this.$t("error_occurred") + `while subscribing to topic:  ${this.sub_topic}`,
           source: "info",
-          color: "#ff5555",
+          color: "#dc2626",
           ts: new Date().toLocaleTimeString(),
         })
       }
@@ -259,7 +258,7 @@ export default {
           (this.subscriptionState ? "unsubscribe" : "subscribe") +
           ` to topic: ${this.sub_topic}`,
         source: "info",
-        color: "#ff5555",
+        color: "#dc2626",
         ts: new Date().toLocaleTimeString(),
       })
     },

@@ -5,7 +5,8 @@
 <style scoped lang="scss">
 .typelink {
   color: var(--ac-color);
-  font-family: "Roboto Mono", monospace;
+  font-family: var(--font-mono);
+  font-size: inherit;
   font-weight: 400;
   cursor: pointer;
 }

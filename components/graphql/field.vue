@@ -27,25 +27,39 @@
 
 <style scoped lang="scss">
 .field-box {
-  padding: 16px;
-  margin: 4px;
-  border-bottom: 1px dashed var(--brd-color);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--brd-color);
+}
+
+.field-box:last-child {
+  border-bottom: 0;
+}
+
+.field-title {
+  color: var(--fg-color);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .field-deprecated {
-  background-color: yellow;
-  color: black;
   display: inline-block;
-  padding: 4px 8px;
-  margin: 4px 0;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 700;
+  padding: 2px 6px;
+  margin: 6px 0 0;
+  border-radius: 5px;
+  background-color: color-mix(in srgb, var(--warning-color) 16%, transparent);
+  color: var(--warning-color);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
 }
 
 .field-desc {
+  margin-top: 5px;
   color: var(--fg-light-color);
-  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
 }
 </style>
 

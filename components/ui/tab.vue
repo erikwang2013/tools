@@ -8,6 +8,7 @@
 
 <script>
 export default {
+  name: "Tab",
   props: {
     label: { type: String },
     icon: { type: String },

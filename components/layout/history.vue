@@ -11,7 +11,7 @@
           />
         </li>
         <button class="icon">
-          <i class="material-icons">search</i>
+          <pw-icon name="search" />
         </button>
       </div>
     </ul>
@@ -31,9 +31,7 @@
               content: !entry.star ? $t('add_star') : $t('remove_star'),
             }"
           >
-            <i class="material-icons">
-              {{ entry.star ? "star" : "star_border" }}
-            </i>
+            <pw-icon :name="entry.star ? 'star' : 'star-border'" />
           </button>
           <li>
             <input
@@ -61,7 +59,7 @@
           </li> -->
           <v-popover>
             <button class="tooltip-target icon" v-tooltip="$t('options')">
-              <i class="material-icons">more_vert</i>
+              <pw-icon name="more" />
             </button>
             <template slot="popover">
               <div>
@@ -72,7 +70,7 @@
                   :aria-label="$t('edit')"
                   v-close-popover
                 >
-                  <i class="material-icons">restore</i>
+                  <pw-icon name="restore" />
                   <span>{{ $t("restore") }}</span>
                 </button>
               </div>
@@ -84,7 +82,7 @@
                   :aria-label="$t('delete')"
                   v-close-popover
                 >
-                  <i class="material-icons">delete</i>
+                  <pw-icon name="delete" />
                   <span>{{ $t("delete") }}</span>
                 </button>
               </div>
@@ -178,55 +176,53 @@
           :disabled="history.length === 0"
           @click="enableHistoryClearing"
         >
-          <i class="material-icons">clear_all</i>
+          <pw-icon name="clear_all" />
           <span>{{ $t("clear_all") }}</span>
         </button>
         <v-popover>
           <button class="tooltip-target icon" v-tooltip="$t('sort')">
-            <i class="material-icons">sort</i>
+            <pw-icon name="sort" />
           </button>
           <template slot="popover">
             <div>
               <button class="icon" @click="sort_by_label()" v-close-popover>
-                <i class="material-icons">sort_by_alpha</i>
+                <pw-icon name="sort-by-alpha" />
                 <span>{{ $t("label") }}</span>
               </button>
             </div>
             <div>
               <button class="icon" @click="sort_by_time()" v-close-popover>
-                <i class="material-icons">access_time</i>
+                <pw-icon name="clock" />
                 <span>{{ $t("time") }}</span>
               </button>
             </div>
             <div>
               <button class="icon" @click="sort_by_status_code()" v-close-popover>
-                <i class="material-icons">assistant</i>
+                <pw-icon name="sparkles" />
                 <span>{{ $t("status") }}</span>
               </button>
             </div>
             <div>
               <button class="icon" @click="sort_by_url()" v-close-popover>
-                <i class="material-icons">language</i>
+                <pw-icon name="language" />
                 <span>{{ $t("url") }}</span>
               </button>
             </div>
             <div>
               <button class="icon" @click="sort_by_path()" v-close-popover>
-                <i class="material-icons">timeline</i>
+                <pw-icon name="timeline" />
                 <span>{{ $t("path") }}</span>
               </button>
             </div>
             <div v-if="showMore">
               <button class="icon" @click="sort_by_duration()" v-close-popover>
-                <i class="material-icons">timer</i>
+                <pw-icon name="timer" />
                 <span>{{ $t("duration") }}</span>
               </button>
             </div>
             <div>
               <button class="icon" @click="toggleCollapse()">
-                <i class="material-icons">
-                  {{ !showMore ? "first_page" : "last_page" }}
-                </i>
+                <pw-icon :name="!showMore ? 'first-page' : 'last-page'" />
                 <span>{{ !showMore ? $t("show_more") : $t("hide_more") }}</span>
               </button>
             </div>
@@ -244,7 +240,7 @@
             @click="clearHistory"
             v-tooltip="$t('yes')"
           >
-            <i class="material-icons">done</i>
+            <pw-icon name="done" />
           </button>
           <button
             class="icon"
@@ -252,7 +248,7 @@
             @click="disableHistoryClearing"
             v-tooltip="$t('no')"
           >
-            <i class="material-icons">close</i>
+            <pw-icon name="close" />
           </button>
         </div>
       </div>
@@ -262,7 +258,7 @@
 
 <style scoped lang="scss">
 .virtual-list {
-  max-height: calc(100vh - 294px);
+  max-height: calc(100vh - 300px);
 
   [readonly] {
     cursor: default;
@@ -271,7 +267,7 @@
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.2s;
+  transition: opacity 0.15s ease;
 }
 
 .fade-enter,
@@ -279,13 +275,51 @@
   opacity: 0;
 }
 
-.stared {
-  color: #f8e81c !important;
-}
-
 ul,
 ol {
   flex-direction: column;
+  margin: 0;
+}
+
+.entry {
+  margin: 0;
+  padding: 6px 4px 8px;
+  border-bottom: 1px solid var(--brd-color);
+  border-radius: var(--radius-sm);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:hover {
+    background-color: var(--bg-dark-color);
+  }
+
+  input {
+    min-height: 26px;
+    height: 26px;
+    padding: 3px 6px;
+    border-color: transparent;
+    background-color: transparent;
+    font-size: 11.5px;
+
+    &:hover,
+    &:focus {
+      border-color: var(--brd-color);
+      background-color: var(--bg-color);
+    }
+  }
+
+  .icon {
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0;
+  }
+}
+
+.stared {
+  color: var(--warning-color) !important;
 }
 
 .method-list-item {
@@ -293,19 +327,21 @@ ol {
 
   span {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    font-family: "Roboto Mono", monospace;
-    font-weight: 400;
-    background-color: transparent;
-    padding: 2px 6px;
-    border-radius: 8px;
+    top: 5px;
+    right: 6px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background-color: var(--ac-soft);
+    color: var(--ac-color);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    pointer-events: none;
   }
 }
 
-.entry {
-  border-bottom: 1px dashed var(--brd-color);
-  padding: 0 0 8px;
+#filter-history input {
+  background-color: var(--bg-color);
 }
 
 @media (max-width: 720px) {

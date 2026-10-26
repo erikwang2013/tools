@@ -15,6 +15,8 @@
 </template>
 
 <script>
+const { SITE_URL, ROUTES: SEO } = require("~/seo/routes")
+
 export default {
   components: {
     sidenav: () => import("../components/layout/sidenav"),
@@ -23,17 +25,49 @@ export default {
   },
 
   head() {
+    const locales = this.$i18n.locales.map(locale => locale.code)
+    const parts = this.$route.path.replace(/\/+$/, "").split("/").filter(Boolean)
+    if (parts.length && locales.includes(parts[0])) parts.shift()
+    const path = parts.length ? `/${parts.join("/")}` : "/"
+    const seo = SEO[path] || SEO["/"]
+    const pathname = this.$route.path.replace(/\/+$/, "") || "/"
+    const canonical = `${SITE_URL}${pathname === "/" ? "/" : pathname}`
     return {
       htmlAttrs: {
         lang: this.localeIso,
       },
+      title: `${seo.title} · Postwoman`,
+      meta: [
+        { hid: "description", name: "description", content: seo.description },
+        { hid: "og:title", property: "og:title", content: `${seo.title} · Postwoman` },
+        { hid: "og:description", property: "og:description", content: seo.description },
+        { hid: "og:url", property: "og:url", content: canonical },
+        { hid: "twitter:title", name: "twitter:title", content: `${seo.title} · Postwoman` },
+        { hid: "twitter:description", name: "twitter:description", content: seo.description },
+        { hid: "twitter:url", name: "twitter:url", content: canonical },
+      ],
       link: [
         {
           hid: "canonical",
           rel: "canonical",
-          href: `https://postwoman.erik.xyz${
-            this.$route.path === "/" ? "/" : this.$route.path.replace(/\/+$/, "")
-          }`,
+          href: canonical,
+        },
+      ],
+      script: [
+        {
+          hid: "breadcrumb-ld-json",
+          type: "application/ld+json",
+          json: {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement:
+              path === "/"
+                ? [{ "@type": "ListItem", position: 1, name: "Postwoman", item: canonical }]
+                : [
+                    { "@type": "ListItem", position: 1, name: "Postwoman", item: `${SITE_URL}/` },
+                    { "@type": "ListItem", position: 2, name: seo.title, item: canonical },
+                  ],
+          },
         },
       ],
     }
@@ -52,10 +86,10 @@ export default {
       // Apply theme from settings.
       document.documentElement.className = this.$store.state.postwoman.settings.THEME_CLASS || ""
       // Load theme color data from settings, or use default color.
-      let color = this.$store.state.postwoman.settings.THEME_COLOR || "#50fa7b"
+      let color = this.$store.state.postwoman.settings.THEME_COLOR || "#4f46e5"
       let vibrant =
         typeof this.$store.state.postwoman.settings.THEME_COLOR_VIBRANT === "undefined"
-          ? true
+          ? false
           : this.$store.state.postwoman.settings.THEME_COLOR_VIBRANT
       document.documentElement.style.setProperty("--ac-color", color)
       document.documentElement.style.setProperty(
@@ -72,14 +106,14 @@ export default {
 
     document
       .querySelector("meta[name=theme-color]")
-      .setAttribute("content", this.$store.state.postwoman.settings.THEME_TAB_COLOR || "#202124")
+      .setAttribute("content", this.$store.state.postwoman.settings.THEME_TAB_COLOR || "#f6f6f4")
 
     console.log(
       "%cWe ❤︎ open source!",
       "background-color:white;padding:8px 16px;border-radius:8px;font-size:32px;color:red;"
     )
     console.log(
-      "%cContribute: https://github.com/liyasthomas/postwoman",
+      "%cContribute: https://github.com/erikwang2013/tools",
       "background-color:black;padding:4px 8px;border-radius:8px;font-size:16px;color:white;"
     )
   },

@@ -2,19 +2,20 @@
   <div class="protocol-log">
     <div class="log-toolbar">
       <button class="icon" :class="{ primary: !hexView }" @click="hexView = false">
-        <i class="material-icons">notes</i>
+        <pw-icon name="notes" />
         <span>{{ $t("text") }}</span>
       </button>
       <button class="icon" :class="{ primary: hexView }" @click="hexView = true">
-        <i class="material-icons">code</i>
+        <pw-icon name="code" />
         <span>{{ $t("hex") }}</span>
       </button>
       <button class="icon" @click="$emit('clear')">
-        <i class="material-icons">clear_all</i>
+        <pw-icon name="clear_all" />
         <span>{{ $t("clear_log") }}</span>
       </button>
     </div>
     <div class="log-entries" ref="entries">
+      <div v-if="!entries.length" class="log-empty">{{ $t("no_output_yet") }}</div>
       <div
         v-for="(row, index) in rows"
         :key="index"
@@ -37,26 +38,34 @@
 
 <style scoped lang="scss">
 div.protocol-log {
-  margin: 4px;
-  width: calc(100% - 8px);
+  width: 100%;
 }
 
 div.log-toolbar {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 4px;
+  gap: 2px;
+  margin-bottom: 6px;
 }
 
 div.log-entries {
-  padding: 8px 16px;
-  border-radius: 8px;
-  background-color: var(--bg-dark-color);
+  padding: 10px 12px;
+  border: 1px solid var(--brd-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-color);
   color: var(--fg-color);
-  height: 256px;
+  height: 240px;
   overflow: auto;
-  font-size: 16px;
-  font-family: "Roboto Mono", monospace;
+  font-size: 12.5px;
+  font-family: var(--font-mono);
   font-weight: 400;
+  line-height: 1.55;
+}
+
+.log-empty {
+  color: var(--fg-light-color);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
 }
 
 .log-entry {

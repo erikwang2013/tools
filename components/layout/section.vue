@@ -2,9 +2,7 @@
   <fieldset :id="label.toLowerCase()" :class="{ 'no-colored-frames': !frameColorsEnabled }">
     <legend @click.prevent="collapse">
       <span>{{ label }}</span>
-      <i class="material-icons">
-        {{ isCollapsed(label) ? "expand_more" : "expand_less" }}
-      </i>
+      <pw-icon :name="isCollapsed(label) ? 'chevron-down' : 'chevron-up'" />
     </legend>
     <div class="collapsible" :class="{ hidden: isCollapsed(label.toLowerCase()) }">
       <slot />
@@ -15,6 +13,10 @@
 <style scoped lang="scss">
 fieldset.no-colored-frames legend {
   color: var(--fg-color);
+}
+
+fieldset.no-colored-frames legend::before {
+  display: none;
 }
 </style>
 

@@ -3,26 +3,26 @@
     <div class="flex-wrap">
       <div>
         <button class="icon" @click="toggleShowChildren">
-          <i class="material-icons" v-show="!showChildren">arrow_right</i>
-          <i class="material-icons" v-show="showChildren">arrow_drop_down</i>
-          <i class="material-icons">folder_open</i>
+          <pw-icon v-show="!showChildren" name="chevron-right" />
+          <pw-icon v-show="showChildren" name="chevron-down" />
+          <pw-icon name="folder-open" />
           <span>{{ folder.name }}</span>
         </button>
       </div>
       <v-popover>
         <button class="tooltip-target icon" v-tooltip="$t('more')">
-          <i class="material-icons">more_vert</i>
+          <pw-icon name="more" />
         </button>
         <template slot="popover">
           <div>
             <button class="icon" @click="editFolder" v-close-popover>
-              <i class="material-icons">edit</i>
+              <pw-icon name="edit" />
               <span>{{ $t("edit") }}</span>
             </button>
           </div>
           <div>
             <button class="icon" @click="removeFolder" v-close-popover>
-              <i class="material-icons">delete</i>
+              <pw-icon name="delete" />
               <span>{{ $t("delete") }}</span>
             </button>
           </div>
@@ -60,11 +60,13 @@
 ul {
   display: flex;
   flex-direction: column;
+  margin: 0;
 }
 
 ul li {
   display: flex;
-  margin-left: 32px;
+  margin-left: 18px;
+  padding-left: 6px;
   border-left: 1px solid var(--brd-color);
 }
 </style>

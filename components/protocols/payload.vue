@@ -10,7 +10,7 @@
       <label for="payload-file">{{ $t("file") }}</label>
       <div>
         <button class="icon" @click="$refs.file.click()">
-          <i class="material-icons">folder_open</i>
+          <pw-icon name="folder-open" />
           <span>{{ $t("choose_file") }}</span>
         </button>
         <span v-if="filename" class="payload-meta">{{ filename }}</span>

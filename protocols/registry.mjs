@@ -18,7 +18,7 @@ export const GROUPS = [
 // Material Icons ligature names; keep to icons shipped in the bundled v48 font.
 export const GROUP_ICONS = {
   HTTP: "language",
-  "Browser Realtime": "settings_input_antenna",
+  "Browser Realtime": "realtime",
   "Raw & Streaming": "swap_horiz",
   "RPC & Messaging": "call_split",
   "IoT / Industrial": "developer_board",
