@@ -64,7 +64,7 @@
     <div class="footer-legal">
       <span>备案信息：</span>
       <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">
-        粤ICP备2020136226号
+        粤ICP备2020136226号-3
       </a>
     </div>
     <div class="footer-info" id="busuanzi">
@@ -126,6 +126,7 @@
 }
 
 .donate-card {
+  height: auto;
   margin: 0;
   padding: 6px;
   flex-flow: column nowrap;
