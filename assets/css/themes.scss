@@ -1,0 +1,92 @@
+/**
+  Themes:
+  - light (default)
+  - dark
+  - midnight (black)
+  - auto (system)
+ */
+
+@mixin lightTheme {
+  --bg-color: #f6f6f4;
+  --bg-light-color: #ffffff;
+  --bg-dark-color: #efefed;
+  --fg-color: #18181b;
+  --fg-light-color: #71717a;
+  --brd-color: #e4e4e7;
+  --err-color: #fef2f2;
+  --ac-color: #4f46e5;
+  --act-color: #ffffff;
+  --atc-color: #ffffff;
+  --tt-color: #18181b;
+  --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.04);
+  --shadow-md: 0 12px 32px rgba(24, 24, 27, 0.08);
+  --ac-soft: rgba(79, 70, 229, 0.08);
+  --success-color: #15803d;
+  --warning-color: #b45309;
+}
+
+@mixin darkTheme {
+  --bg-color: #0c0c0e;
+  --bg-light-color: #151518;
+  --bg-dark-color: #111114;
+  --fg-color: #f4f4f5;
+  --fg-light-color: #a1a1aa;
+  --brd-color: #27272a;
+  --err-color: #2a1215;
+  --ac-color: #6366f1;
+  --act-color: #ffffff;
+  --atc-color: #ffffff;
+  --tt-color: #f4f4f5;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 18px 48px rgba(0, 0, 0, 0.45);
+  --ac-soft: rgba(99, 102, 241, 0.16);
+  --success-color: #4ade80;
+  --warning-color: #fbbf24;
+}
+
+@mixin midnightTheme {
+  --bg-color: #000000;
+  --bg-light-color: #0a0a0b;
+  --bg-dark-color: #080809;
+  --fg-color: #fafafa;
+  --fg-light-color: #a1a1aa;
+  --brd-color: #1f1f22;
+  --err-color: #2a1215;
+  --ac-color: #818cf8;
+  --act-color: #0b0b0d;
+  --atc-color: #0b0b0d;
+  --tt-color: #fafafa;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 18px 48px rgba(0, 0, 0, 0.6);
+  --ac-soft: rgba(129, 140, 248, 0.16);
+  --success-color: #4ade80;
+  --warning-color: #fbbf24;
+}
+
+:root {
+  @include lightTheme;
+}
+
+:root.light {
+  @include lightTheme;
+}
+
+:root.dark {
+  @include darkTheme;
+}
+
+:root.black {
+  @include midnightTheme;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root.auto {
+    @include darkTheme;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root.auto {
+    @include lightTheme;
+  }
+}

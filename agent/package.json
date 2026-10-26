@@ -1,0 +1,32 @@
+{
+  "name": "postwoman-agent",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=18 <19"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test test/*.test.js test/*.test.mjs",
+    "test:perf": "AGENT_PERF=1 node --test test/performance.test.js",
+    "bench": "node bench/local-latency.js"
+  },
+  "dependencies": {
+    "@bacnet-js/client": "^3.3.2",
+    "@creditkarma/thrift-parser": "^2.0.0",
+    "@grpc/grpc-js": "^1.14.6",
+    "@grpc/proto-loader": "^0.8.1",
+    "amqplib": "^2.2.0",
+    "coap": "^1.6.0",
+    "dnp3": "^0.0.1",
+    "hessian.js": "^2.11.0",
+    "kafkajs": "^2.2.4",
+    "modbus-serial": "^8.0.25",
+    "node-opcua": "^2.100.0",
+    "thrift": "^0.25.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "jsmodbus": "^5.0.0"
+  }
+}
